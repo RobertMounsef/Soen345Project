@@ -22,7 +22,7 @@
 ## 2. System Architecture & Design
 We utilize a **Decoupled 3-Layered Architecture**:
 
-* **Presentation Layer:** Developed using **React.js** to ensure a type-safe, responsive, and professional UI.
+* **Presentation Layer:** Android mobile application developed in Java using Android Studio.
 * **Application Layer:** A **Java** backend managing the business logic, reservation validation, and RESTful API endpoints.
 * **Data Layer:** A cloud-hosted database (e.g., MySQL via AWS RDS) for persistent storage of users and events.
 

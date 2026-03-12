@@ -30,3 +30,12 @@ Base URL: `http://localhost:8080`
 | `GET` | `/api/reservations/{id}` | Get reservation by ID |
 | `POST` | `/api/reservations` | Create a reservation |
 | `DELETE` | `/api/reservations/{id}` | Delete a reservation |
+
+## Notifications
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/notifications` | Get all notifications |
+| `GET` | `/api/notifications/{id}` | Get notification by ID |
+| `POST` | `/api/notifications` | Create a notification |
+| `DELETE` | `/api/notifications/{id}` | Delete a notification |

@@ -21,3 +21,12 @@ Base URL: `http://localhost:8080`
 | `POST` | `/api/events` | Create a new event |
 | `PUT` | `/api/events/{id}` | Update an event |
 | `DELETE` | `/api/events/{id}` | Delete an event |
+
+## Reservations
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/reservations` | Get all reservations |
+| `GET` | `/api/reservations/{id}` | Get reservation by ID |
+| `POST` | `/api/reservations` | Create a reservation |
+| `DELETE` | `/api/reservations/{id}` | Delete a reservation |

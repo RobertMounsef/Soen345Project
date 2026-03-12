@@ -30,7 +30,7 @@ We utilize a **Decoupled 3-Layered Architecture**:
 
 
 * **Architecture Diagram:** [Link will go here when completed]
-* **Database Design:** [Link will go here when completed]
+* **ER Diagram:** (https://drive.google.com/file/d/1LYcdCFUCBTYCgRVb8Z5pxiwDWKllbz8b/view?usp=sharing)
 * **UML Use Case Diagram:** [Link will go here when completed]
 * **UML Class Diagram:** [Link will go here when completed]
 * **UML Sequence Diagram:** [Link will go here when completed]

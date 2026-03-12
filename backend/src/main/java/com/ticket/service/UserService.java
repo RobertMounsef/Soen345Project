@@ -44,4 +44,22 @@ public class UserService {
     public void deleteUser(Integer id) {
         userRepository.deleteById(id);
     }
+
+    /**
+     * Looks up a user by email and validates the password.
+     * NOTE: Passwords are compared as plain text here.
+     * Consider using BCrypt hashing in production.
+     */
+    public Optional<User> findByEmailAndPassword(String email, String password) {
+        return userRepository.findByEmail(email)
+                .filter(user -> user.getPassword().equals(password));
+    }
+
+    /**
+     * Looks up a user by phone number and validates the password.
+     */
+    public Optional<User> findByPhoneAndPassword(String phone, String password) {
+        return userRepository.findByPhone(phone)
+                .filter(user -> user.getPassword().equals(password));
+    }
 }

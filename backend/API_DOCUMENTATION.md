@@ -11,3 +11,13 @@ Base URL: `http://localhost:8080`
 | `POST` | `/api/users` | Create a new user |
 | `PUT` | `/api/users/{id}` | Update a user |
 | `DELETE` | `/api/users/{id}` | Delete a user |
+
+## Events
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/events` | Get all events |
+| `GET` | `/api/events/{id}` | Get event by ID |
+| `POST` | `/api/events` | Create a new event |
+| `PUT` | `/api/events/{id}` | Update an event |
+| `DELETE` | `/api/events/{id}` | Delete an event |

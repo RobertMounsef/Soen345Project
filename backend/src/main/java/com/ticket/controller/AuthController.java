@@ -24,15 +24,8 @@ public class AuthController {
         this.userService = userService;
     }
 
-    /**
-     * POST /api/auth/login
-     *
-     * Accepts login via email OR phone number.
-     * On success, stores userId and role in the HTTP session.
-     *
-     * Request body:
-     * { "identifier": "user@example.com OR 5141234567", "password": "secret" }
-     */
+    
+    // POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
             @RequestBody LoginRequest loginRequest,
@@ -71,10 +64,8 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * GET /api/auth/session
-     * Returns the current session's userId and role, or 401 if not logged in.
-     */
+    
+    //GET /api/auth/session
     @GetMapping("/session")
     public ResponseEntity<Map<String, Object>> getSession(HttpSession session) {
         Integer userId = (Integer) session.getAttribute(SESSION_USER_ID);
@@ -92,10 +83,8 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * POST /api/auth/logout
-     * Invalidates the current session.
-     */
+
+    //POST /api/auth/logout
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpSession session) {
         session.invalidate();

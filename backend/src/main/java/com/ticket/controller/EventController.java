@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpSession;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 import java.util.Map;
 
 @RestController
@@ -19,17 +19,33 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    // ---------------------------------------------------------------
-    // GET /api/events – public (anyone can browse events)
-    // ---------------------------------------------------------------
+    // GET /api/events – public, with optional search filters
     @GetMapping
-    public List<Event> getAllEvents() {
-        return eventService.getAllEvents();
+    public ResponseEntity<?> getAllEvents(
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String location,
+            @RequestParam(required = false) String date) {
+
+        if (category != null && !category.isBlank()) {
+            return ResponseEntity.ok(eventService.searchByCategory(category));
+        }
+        if (location != null && !location.isBlank()) {
+            return ResponseEntity.ok(eventService.searchByLocation(location));
+        }
+        if (date != null && !date.isBlank()) {
+            try {
+                LocalDate parsed = LocalDate.parse(date);
+                return ResponseEntity.ok(eventService.searchByDate(parsed));
+            } catch (Exception e) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("error", "Invalid date format. Use yyyy-MM-dd"));
+            }
+        }
+
+        return ResponseEntity.ok(eventService.getAllEvents());
     }
 
-    // ---------------------------------------------------------------
     // GET /api/events/{id} – public
-    // ---------------------------------------------------------------
     @GetMapping("/{id}")
     public ResponseEntity<?> getEventById(@PathVariable Integer id) {
         return eventService.getEventById(id)
@@ -37,10 +53,7 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // ---------------------------------------------------------------
-    // POST /api/events
-    // ADMIN only. The organizer is set to the session user automatically.
-    // ---------------------------------------------------------------
+    // POST /api/events - ADMIN only
     @PostMapping
     public ResponseEntity<?> createEvent(
             @RequestBody Event event,
@@ -56,7 +69,6 @@ public class EventController {
             return ResponseEntity.status(403).body(Map.of("error", "Only admins can create events"));
         }
 
-        // Force the organizer to be the logged-in admin
         com.ticket.model.User organizer = new com.ticket.model.User();
         organizer.setUserId(sessionUserId);
         event.setOrganizer(organizer);
@@ -64,10 +76,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.createEvent(event));
     }
 
-    // ---------------------------------------------------------------
-    // PUT /api/events/{id}
-    // ADMIN only, and only the organizer of that event.
-    // ---------------------------------------------------------------
+    // PUT /api/events/{id} - ADMIN only, and only the organizer of that event.
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEvent(
             @PathVariable Integer id,
@@ -88,8 +97,6 @@ public class EventController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-
-        // Only the organizer of this event may edit it
         if (!existing.getOrganizer().getUserId().equals(sessionUserId)) {
             return ResponseEntity.status(403)
                     .body(Map.of("error", "You can only edit your own events"));
@@ -98,10 +105,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.updateEvent(id, updatedEvent));
     }
 
-    // ---------------------------------------------------------------
-    // DELETE /api/events/{id}
-    // ADMIN only, and only the organizer of that event.
-    // ---------------------------------------------------------------
+    // DELETE /api/events/{id} - ADMIN only, and only the organizer of that event.
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEvent(
             @PathVariable Integer id,
@@ -121,7 +125,6 @@ public class EventController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-
         if (!existing.getOrganizer().getUserId().equals(sessionUserId)) {
             return ResponseEntity.status(403)
                     .body(Map.of("error", "You can only delete your own events"));

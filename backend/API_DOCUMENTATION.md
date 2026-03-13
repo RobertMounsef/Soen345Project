@@ -91,14 +91,3 @@ Base URL: `http://localhost:8080`
 ```
 
 ---
-
-## HTTP Status Codes
-
-| Code | Meaning |
-|------|---------|
-| `200` | OK |
-| `204` | No content (successful delete) |
-| `400` | Bad request (e.g. sold out, missing email) |
-| `401` | Not logged in |
-| `403` | Forbidden (wrong role or not your resource) |
-| `404` | Resource not found |

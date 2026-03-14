@@ -1,7 +1,9 @@
-package com.ticket.service;
+package com.ticket.unit;
 
 import com.ticket.model.User;
 import com.ticket.repository.UserRepository;
+import com.ticket.service.UserService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

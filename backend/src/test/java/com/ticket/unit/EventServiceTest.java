@@ -1,8 +1,10 @@
-package com.ticket.service;
+package com.ticket.unit;
 
 import com.ticket.model.Event;
 import com.ticket.model.User;
 import com.ticket.repository.EventRepository;
+import com.ticket.service.EventService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

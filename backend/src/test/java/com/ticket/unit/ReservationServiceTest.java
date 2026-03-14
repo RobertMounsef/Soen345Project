@@ -1,4 +1,4 @@
-package com.ticket.service;
+package com.ticket.unit;
 
 import com.ticket.model.Event;
 import com.ticket.model.Reservation;
@@ -6,6 +6,9 @@ import com.ticket.model.User;
 import com.ticket.repository.EventRepository;
 import com.ticket.repository.ReservationRepository;
 import com.ticket.repository.UserRepository;
+import com.ticket.service.EmailService;
+import com.ticket.service.ReservationService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

@@ -24,7 +24,7 @@ class EmailServiceTest {
     @InjectMocks
     private EmailService emailService;
 
-    // ── sendReservationConfirmation ────────────────────────────────
+    //sendReservationConfirmation
 
     @Nested
     @DisplayName("sendReservationConfirmation")
@@ -83,7 +83,7 @@ class EmailServiceTest {
         }
     }
 
-    // ── sendReservationCancellation ───────────────────────────────
+    // sendReservationCancellation
 
     @Nested
     @DisplayName("sendReservationCancellation")

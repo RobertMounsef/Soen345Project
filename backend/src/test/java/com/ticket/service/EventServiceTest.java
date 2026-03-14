@@ -80,7 +80,7 @@ class EventServiceTest {
         }
     }
 
-    // ── getEventById ──────────────────────────────────────────────
+    // getEventById 
 
     @Nested
     @DisplayName("getEventById")
@@ -101,7 +101,7 @@ class EventServiceTest {
         }
     }
 
-    // ── createEvent ───────────────────────────────────────────────
+    // createEvent
 
     @Nested
     @DisplayName("createEvent")
@@ -138,7 +138,7 @@ class EventServiceTest {
         }
     }
 
-    // ── updateEvent ───────────────────────────────────────────────
+    //updateEvent 
 
     @Nested
     @DisplayName("updateEvent")
@@ -173,7 +173,7 @@ class EventServiceTest {
         }
     }
 
-    // ── deleteEvent ───────────────────────────────────────────────
+    //deleteEvent
 
     @Nested
     @DisplayName("deleteEvent")
@@ -187,7 +187,7 @@ class EventServiceTest {
         }
     }
 
-    // ── searchByCategory ──────────────────────────────────────────
+    //searchByCategory
 
     @Nested
     @DisplayName("searchByCategory")
@@ -215,7 +215,7 @@ class EventServiceTest {
         }
     }
 
-    // ── searchByLocation ──────────────────────────────────────────
+    //searchByLocation
 
     @Nested
     @DisplayName("searchByLocation")
@@ -236,7 +236,7 @@ class EventServiceTest {
         }
     }
 
-    // ── searchByDate ──────────────────────────────────────────────
+    //searchByDate
 
     @Nested
     @DisplayName("searchByDate")

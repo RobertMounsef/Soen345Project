@@ -39,7 +39,7 @@ class ReservationServiceTest {
     @InjectMocks
     private ReservationService reservationService;
 
-    // ── Shared fixture helpers ──────────────────────────────────────
+    // Shared fixture helpers
 
     private User makeUser(Integer id, String name, String email) {
         User u = new User();
@@ -82,7 +82,7 @@ class ReservationServiceTest {
         jazzNight = makeEvent(10, "Jazz Night", 100, 5);
     }
 
-    // ── getAllReservations ─────────────────────────────────────────
+    //getAllReservations
 
     @Nested
     @DisplayName("getAllReservations")
@@ -105,7 +105,7 @@ class ReservationServiceTest {
         }
     }
 
-    // ── getReservationsByUserId ────────────────────────────────────
+    //getReservationsByUserId
 
     @Nested
     @DisplayName("getReservationsByUserId")
@@ -128,7 +128,7 @@ class ReservationServiceTest {
         }
     }
 
-    // ── getReservationsByEventId ───────────────────────────────────
+    //getReservationsByEventId
 
     @Nested
     @DisplayName("getReservationsByEventId")
@@ -151,7 +151,7 @@ class ReservationServiceTest {
         }
     }
 
-    // ── getReservationByEventAndUser ───────────────────────────────
+    //getReservationByEventAndUser
 
     @Nested
     @DisplayName("getReservationByEventAndUser")
@@ -174,7 +174,7 @@ class ReservationServiceTest {
         }
     }
 
-    // ── createReservation ─────────────────────────────────────────
+    //createReservation
 
     @Nested
     @DisplayName("createReservation")
@@ -284,7 +284,7 @@ class ReservationServiceTest {
         }
     }
 
-    // ── deleteReservation ─────────────────────────────────────────
+    //deleteReservation
 
     @Nested
     @DisplayName("deleteReservation")

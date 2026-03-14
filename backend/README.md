@@ -19,7 +19,8 @@ backend/
 │   │       └── application.properties  # Spring Boot config
 │   └── test/
 │       ├── java/com/ticket/
-│       │   └── service/          # Unit tests
+│       │   ├── unit/          # Unit tests
+│       │   └── integration/   # Integration tests
 │       └── resources/
 │           └── application.properties  # H2 in-memory config for tests
 ├── .github/
@@ -57,7 +58,7 @@ spirng.mail.port= ACTUAL_PORT
 - `./mvnw spring-boot:run`
 ---
 ## Testing
-Unit tests are written with **JUnit 5** and **Mockito**.
+Tests are written with **JUnit 5**, **Mockito**, and **Spring Boot Test**.
 
 There are two separate `application.properties` files:
 - `src/main/resources/application.properties` — real PostgreSQL + Mailtrap credentials, used when running the app

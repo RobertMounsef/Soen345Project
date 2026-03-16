@@ -7,9 +7,16 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ReservationRepository extends JpaRepository<Reservation, Integer> {
+
     List<Reservation> findByUser_UserId(Integer userId);
 
     List<Reservation> findByEvent_EventId(Integer eventId);
 
     Optional<Reservation> findByEvent_EventIdAndUser_UserId(Integer eventId, Integer userId);
+
+    boolean existsByUser_UserIdAndEvent_EventIdAndStatus(
+            Integer userId,
+            Integer eventId,
+            Reservation.Status status
+    );
 }

@@ -21,9 +21,9 @@ public class ReservationService {
     private final UserRepository userRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
-            EventRepository eventRepository,
-            EmailService emailService,
-            UserRepository userRepository) {
+                              EventRepository eventRepository,
+                              EmailService emailService,
+                              UserRepository userRepository) {
         this.reservationRepository = reservationRepository;
         this.eventRepository = eventRepository;
         this.emailService = emailService;
@@ -52,7 +52,21 @@ public class ReservationService {
 
     @Transactional
     public Reservation createReservation(Reservation reservation) {
-        Event event = eventRepository.findById(reservation.getEvent().getEventId())
+        Integer userId = reservation.getUser().getUserId();
+        Integer eventId = reservation.getEvent().getEventId();
+
+        boolean alreadyReserved = reservationRepository
+                .existsByUser_UserIdAndEvent_EventIdAndStatus(
+                        userId,
+                        eventId,
+                        Reservation.Status.CONFIRMED
+                );
+
+        if (alreadyReserved) {
+            throw new IllegalStateException("You have already reserved this event");
+        }
+
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found"));
 
         if (event.getAvailableSpots() <= 0) {
@@ -64,12 +78,19 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
-        // Fetch full user to get email and name
         User user = userRepository.findById(saved.getUser().getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
-            emailService.sendReservationConfirmation(user.getEmail(), user.getName(), event.getTitle());
+            try {
+                emailService.sendReservationConfirmation(
+                        user.getEmail(),
+                        user.getName(),
+                        event.getTitle()
+                );
+            } catch (Exception e) {
+                System.out.println("Email failed, but reservation was created: " + e.getMessage());
+            }
         }
 
         return saved;
@@ -89,7 +110,11 @@ public class ReservationService {
         String eventTitle = event.getTitle();
 
         if (email != null && !email.isBlank()) {
-            emailService.sendReservationCancellation(email, userName, eventTitle);
+            try {
+                emailService.sendReservationCancellation(email, userName, eventTitle);
+            } catch (Exception e) {
+                System.out.println("Cancellation email failed, but reservation was deleted: " + e.getMessage());
+            }
         }
 
         reservationRepository.deleteById(id);

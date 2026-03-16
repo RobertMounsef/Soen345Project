@@ -141,7 +141,7 @@ public class ReservationController {
         try {
             return ResponseEntity.ok(reservationService.createReservation(reservation));
         } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+            return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.notFound().build();
         }

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvReservationTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Title"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <TextView
+        android:id="@+id/tvReservationEventDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Event Date"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvReservationDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Reservation Date"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvReservationStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Status"
+        android:layout_marginBottom="4dp" />
+
+    <TextView
+        android:id="@+id/tvReservationLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Location"
+        android:layout_marginBottom="12dp" />
+
+    <Button
+        android:id="@+id/btnCancelReservation"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel Reservation" />
+
+</LinearLayout>

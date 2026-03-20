@@ -48,6 +48,13 @@
             android:inputType="textPassword"
             android:layout_marginBottom="12dp" />
 
+        <CheckBox
+            android:id="@+id/cbOrganizerRole"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Register as Organizer"
+            android:layout_marginBottom="12dp" />
+
         <Button
             android:id="@+id/btnRegister"
             android:layout_width="match_parent"

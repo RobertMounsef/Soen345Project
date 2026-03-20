@@ -6,6 +6,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.CheckBox;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -19,9 +20,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class RegisterActivity extends AppCompatActivity {
+public class RegisterActivity extends BaseActivity {
 
     private EditText etName, etEmail, etPhone, etRegisterPassword;
+    private CheckBox cbOrganizerRole;
     private Button btnRegister, btnBackToLogin;
     private TextView tvRegisterMessage;
 
@@ -34,6 +36,7 @@ public class RegisterActivity extends AppCompatActivity {
         etEmail = findViewById(R.id.etEmail);
         etPhone = findViewById(R.id.etPhone);
         etRegisterPassword = findViewById(R.id.etRegisterPassword);
+        cbOrganizerRole = findViewById(R.id.cbOrganizerRole);
         btnRegister = findViewById(R.id.btnRegister);
         btnBackToLogin = findViewById(R.id.btnBackToLogin);
         tvRegisterMessage = findViewById(R.id.tvRegisterMessage);
@@ -59,8 +62,10 @@ public class RegisterActivity extends AppCompatActivity {
         btnRegister.setEnabled(false);
         tvRegisterMessage.setText("Creating account...");
 
+        String role = cbOrganizerRole.isChecked() ? "ORGANIZER" : "CUSTOMER";
+
         RegisterRequest registerRequest =
-                new RegisterRequest(name, email, phone, password, "CUSTOMER");
+                new RegisterRequest(name, email, phone, password, role);
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 

@@ -23,7 +23,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class ManagedEventsActivity extends AppCompatActivity {
+public class ManagedEventsActivity extends BaseActivity {
 
     private RecyclerView recyclerViewManagedEvents;
     private TextView tvManagedEventsMessage;

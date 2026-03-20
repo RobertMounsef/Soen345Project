@@ -5,6 +5,9 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.app.DatePickerDialog;
+import java.util.Calendar;
+import java.util.Locale;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -18,9 +21,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AddEditEventActivity extends AppCompatActivity {
+public class AddEditEventActivity extends BaseActivity {
 
-    private EditText etEventTitle, etEventCategory, etEventDateTime, etEventLocation, etTotalSpots;
+    private EditText etEventTitle, etEventCategory, etEventDate, etEventTime, etEventLocation, etTotalSpots;
     private Button btnCreateEvent;
     private TextView tvAddEventMessage;
 
@@ -36,7 +39,10 @@ public class AddEditEventActivity extends AppCompatActivity {
 
         etEventTitle = findViewById(R.id.etEventTitle);
         etEventCategory = findViewById(R.id.etEventCategory);
-        etEventDateTime = findViewById(R.id.etEventDateTime);
+        etEventDate = findViewById(R.id.etEventDate);
+        etEventTime = findViewById(R.id.etEventTime);
+
+        setupDateAndTimePickers();
         etEventLocation = findViewById(R.id.etEventLocation);
         etTotalSpots = findViewById(R.id.etTotalSpots);
         btnCreateEvent = findViewById(R.id.btnCreateEvent);
@@ -51,7 +57,14 @@ public class AddEditEventActivity extends AppCompatActivity {
 
             etEventTitle.setText(getIntent().getStringExtra("title"));
             etEventCategory.setText(getIntent().getStringExtra("category"));
-            etEventDateTime.setText(getIntent().getStringExtra("eventDate"));
+            String eventDateFull = getIntent().getStringExtra("eventDate");
+            if (eventDateFull != null && eventDateFull.contains("T")) {
+                String[] parts = eventDateFull.split("T");
+                etEventDate.setText(parts[0]);
+                etEventTime.setText(parts[1]);
+            } else {
+                etEventDate.setText(eventDateFull);
+            }
             etEventLocation.setText(getIntent().getStringExtra("location"));
             etTotalSpots.setText(String.valueOf(getIntent().getIntExtra("totalSpots", 0)));
 
@@ -68,6 +81,15 @@ public class AddEditEventActivity extends AppCompatActivity {
         });
     }
 
+    private void setupDateAndTimePickers() {
+        etEventDate.setOnClickListener(v -> {
+            Calendar c = Calendar.getInstance();
+            new DatePickerDialog(this, (view, year, month, dayOfMonth) -> {
+                etEventDate.setText(String.format(Locale.US, "%04d-%02d-%02d", year, month + 1, dayOfMonth));
+            }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
+        });
+    }
+
     private void createEvent() {
         submitEventRequest(false);
     }
@@ -79,7 +101,14 @@ public class AddEditEventActivity extends AppCompatActivity {
     private void submitEventRequest(boolean editing) {
         String title = etEventTitle.getText().toString().trim();
         String category = etEventCategory.getText().toString().trim();
-        String eventDate = etEventDateTime.getText().toString().trim();
+        String date = etEventDate.getText().toString().trim();
+        String time = etEventTime.getText().toString().trim();
+        
+        if (time.length() == 5 && time.contains(":")) {
+            time = time + ":00";
+        }
+        
+        String eventDate = date.isEmpty() || time.isEmpty() ? "" : date + "T" + time;
         String location = etEventLocation.getText().toString().trim();
         String totalSpotsText = etTotalSpots.getText().toString().trim();
 

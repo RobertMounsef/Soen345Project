@@ -32,7 +32,7 @@ public class User {
 
     public enum Role {
         CUSTOMER,
-        ADMIN
+        ORGANIZER
     }
 
     // -----------------

@@ -9,7 +9,7 @@
         android:id="@+id/tvAdminWelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Admin Panel"
+        android:text="Organizer Panel"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="24dp" />

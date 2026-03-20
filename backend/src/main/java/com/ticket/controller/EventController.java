@@ -53,7 +53,7 @@ public class EventController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // POST /api/events - ADMIN only
+    // POST /api/events - ORGANIZER only
     @PostMapping
     public ResponseEntity<?> createEvent(
             @RequestBody Event event,
@@ -65,8 +65,8 @@ public class EventController {
         if (sessionUserId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
         }
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can create events"));
+        if (!"ORGANIZER".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only organizers can create events"));
         }
 
         com.ticket.model.User organizer = new com.ticket.model.User();
@@ -76,7 +76,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.createEvent(event));
     }
 
-    // PUT /api/events/{id} - ADMIN only, and only the organizer of that event.
+    // PUT /api/events/{id} - ORGANIZER only, and only the organizer of that event.
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEvent(
             @PathVariable Integer id,
@@ -89,8 +89,8 @@ public class EventController {
         if (sessionUserId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
         }
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can edit events"));
+        if (!"ORGANIZER".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only organizers can edit events"));
         }
 
         Event existing = eventService.getEventById(id).orElse(null);
@@ -105,7 +105,7 @@ public class EventController {
         return ResponseEntity.ok(eventService.updateEvent(id, updatedEvent));
     }
 
-    // DELETE /api/events/{id} - ADMIN only, and only the organizer of that event.
+    // DELETE /api/events/{id} - ORGANIZER only, and only the organizer of that event.
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEvent(
             @PathVariable Integer id,
@@ -117,8 +117,8 @@ public class EventController {
         if (sessionUserId == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Not logged in"));
         }
-        if (!"ADMIN".equals(role)) {
-            return ResponseEntity.status(403).body(Map.of("error", "Only admins can delete events"));
+        if (!"ORGANIZER".equals(role)) {
+            return ResponseEntity.status(403).body(Map.of("error", "Only organizers can delete events"));
         }
 
         Event existing = eventService.getEventById(id).orElse(null);

@@ -17,7 +17,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AdminHomeActivity extends AppCompatActivity {
+public class AdminHomeActivity extends BaseActivity {
 
     private TextView tvAdminWelcome;
     private Button btnManageEvents, btnAddEvent, btnLogout;
@@ -32,7 +32,7 @@ public class AdminHomeActivity extends AppCompatActivity {
         btnAddEvent = findViewById(R.id.btnAddEvent);
         btnLogout = findViewById(R.id.btnAdminLogout);
 
-        tvAdminWelcome.setText("Admin Panel");
+        tvAdminWelcome.setText("Organizer Panel");
 
         btnManageEvents.setOnClickListener(v -> {
             Intent intent = new Intent(AdminHomeActivity.this, ManagedEventsActivity.class);
@@ -47,7 +47,7 @@ public class AdminHomeActivity extends AppCompatActivity {
         btnLogout.setOnClickListener(v -> logoutUser());
     }
 
-    private void logoutUser() {
+    protected void logoutUser() {
         btnLogout.setEnabled(false);
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);

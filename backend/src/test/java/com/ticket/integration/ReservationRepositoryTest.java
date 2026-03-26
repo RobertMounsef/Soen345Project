@@ -2,153 +2,121 @@ package com.ticket.integration;
 
 import com.ticket.model.Event;
 import com.ticket.model.Reservation;
-import com.ticket.model.User;
-import com.ticket.repository.EventRepository;
 import com.ticket.repository.ReservationRepository;
-import com.ticket.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 @DisplayName("ReservationRepository")
 class ReservationRepositoryTest {
 
-    @Autowired
+    @Mock
     private ReservationRepository reservationRepository;
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final String ALICE_ID = "-userAlice001";
+    private static final String JAZZ_ID  = "-evtJazz001";
 
-    @Autowired
-    private EventRepository eventRepository;
-
-    private User alice;
-    private Event jazzNight;
+    private Reservation jazzReservation;
 
     @BeforeEach
     void setUp() {
-        alice = new User();
-        alice.setName("Alice");
-        alice.setEmail("alice@test.com");
-        alice.setPassword("secret");
-        alice.setRole(User.Role.CUSTOMER);
-        userRepository.save(alice);
-
-        jazzNight = new Event();
-        jazzNight.setTitle("Jazz Night");
-        jazzNight.setCategory("music");
-        jazzNight.setLocation("Montreal");
-        jazzNight.setEventDate(LocalDateTime.of(2026, 6, 15, 20, 0));
-        jazzNight.setTotalSpots(100);
-        jazzNight.setAvailableSpots(100);
-        jazzNight.setStatus(Event.Status.ACTIVE);
-        jazzNight.setOrganizer(alice);
-        eventRepository.save(jazzNight);
-
-        Reservation reservation = new Reservation();
-        reservation.setUser(alice);
-        reservation.setEvent(jazzNight);
-        reservation.setStatus(Reservation.Status.CONFIRMED);
-        reservationRepository.save(reservation);
+        jazzReservation = new Reservation();
+        jazzReservation.setReservationId("-res001");
+        jazzReservation.setUserId(ALICE_ID);
+        jazzReservation.setEventId(JAZZ_ID);
+        jazzReservation.setReservationDate(LocalDateTime.of(2026, 5, 1, 10, 0));
+        jazzReservation.setStatus(Reservation.Status.CONFIRMED);
     }
 
-    // findByUser_UserId
-
     @Nested
-    @DisplayName("findByUser_UserId")
+    @DisplayName("findByUserId")
     class FindByUser {
 
         @Test
         @DisplayName("returns reservations for the given user")
         void found() {
-            List<Reservation> result = reservationRepository.findByUser_UserId(alice.getUserId());
+            when(reservationRepository.findByUserId(ALICE_ID)).thenReturn(List.of(jazzReservation));
+
+            List<Reservation> result = reservationRepository.findByUserId(ALICE_ID);
+
             assertThat(result).hasSize(1);
-            assertThat(result.get(0).getEvent().getTitle()).isEqualTo("Jazz Night");
+            assertThat(result.get(0).getEventId()).isEqualTo(JAZZ_ID);
         }
 
         @Test
         @DisplayName("returns empty when user has no reservations (edge case)")
         void noReservations() {
-            User bob = new User();
-            bob.setName("Bob");
-            bob.setEmail("bob@test.com");
-            bob.setPassword("pass");
-            bob.setRole(User.Role.CUSTOMER);
-            userRepository.save(bob);
+            String bobId = "-userBob002";
+            when(reservationRepository.findByUserId(bobId)).thenReturn(List.of());
 
-            List<Reservation> result = reservationRepository.findByUser_UserId(bob.getUserId());
+            List<Reservation> result = reservationRepository.findByUserId(bobId);
+
             assertThat(result).isEmpty();
         }
     }
 
-    // findByEvent_EventId
-
     @Nested
-    @DisplayName("findByEvent_EventId")
+    @DisplayName("findByEventId")
     class FindByEvent {
 
         @Test
         @DisplayName("returns reservations for the given event")
         void found() {
-            List<Reservation> result = reservationRepository.findByEvent_EventId(jazzNight.getEventId());
+            when(reservationRepository.findByEventId(JAZZ_ID)).thenReturn(List.of(jazzReservation));
+
+            List<Reservation> result = reservationRepository.findByEventId(JAZZ_ID);
+
             assertThat(result).hasSize(1);
         }
 
         @Test
         @DisplayName("returns empty when event has no reservations (edge case)")
         void noReservations() {
-            Event other = new Event();
-            other.setTitle("Blues Night");
-            other.setCategory("music");
-            other.setLocation("Toronto");
-            other.setEventDate(LocalDateTime.of(2026, 7, 10, 19, 0));
-            other.setTotalSpots(50);
-            other.setAvailableSpots(50);
-            other.setStatus(Event.Status.ACTIVE);
-            other.setOrganizer(alice);
-            eventRepository.save(other);
+            String bluesId = "-evtBlues003";
+            when(reservationRepository.findByEventId(bluesId)).thenReturn(List.of());
 
-            List<Reservation> result = reservationRepository.findByEvent_EventId(other.getEventId());
+            List<Reservation> result = reservationRepository.findByEventId(bluesId);
+
             assertThat(result).isEmpty();
         }
     }
 
-    // findByEvent_EventIdAndUser_UserId 
-
     @Nested
-    @DisplayName("findByEvent_EventIdAndUser_UserId")
+    @DisplayName("findByEventIdAndUserId")
     class FindByEventAndUser {
 
         @Test
         @DisplayName("returns reservation when user has booked the event")
         void found() {
-            Optional<Reservation> result = reservationRepository
-                    .findByEvent_EventIdAndUser_UserId(jazzNight.getEventId(), alice.getUserId());
+            when(reservationRepository.findByEventIdAndUserId(JAZZ_ID, ALICE_ID))
+                    .thenReturn(Optional.of(jazzReservation));
+
+            Optional<Reservation> result = reservationRepository.findByEventIdAndUserId(JAZZ_ID, ALICE_ID);
+
             assertThat(result).isPresent();
         }
 
         @Test
         @DisplayName("returns empty when user has not booked the event (edge case)")
         void notBooked() {
-            User bob = new User();
-            bob.setName("Bob");
-            bob.setEmail("bob@test.com");
-            bob.setPassword("pass");
-            bob.setRole(User.Role.CUSTOMER);
-            userRepository.save(bob);
+            String bobId = "-userBob002";
+            when(reservationRepository.findByEventIdAndUserId(JAZZ_ID, bobId))
+                    .thenReturn(Optional.empty());
 
-            Optional<Reservation> result = reservationRepository
-                    .findByEvent_EventIdAndUser_UserId(jazzNight.getEventId(), bob.getUserId());
+            Optional<Reservation> result = reservationRepository.findByEventIdAndUserId(JAZZ_ID, bobId);
+
             assertThat(result).isEmpty();
         }
     }

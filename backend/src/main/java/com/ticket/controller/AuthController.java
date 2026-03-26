@@ -24,7 +24,6 @@ public class AuthController {
         this.userService = userService;
     }
 
-    
     // POST /api/auth/login
     @PostMapping("/login")
     public ResponseEntity<Map<String, Object>> login(
@@ -64,11 +63,10 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    
-    //GET /api/auth/session
+    // GET /api/auth/session
     @GetMapping("/session")
     public ResponseEntity<Map<String, Object>> getSession(HttpSession session) {
-        Integer userId = (Integer) session.getAttribute(SESSION_USER_ID);
+        String userId = (String) session.getAttribute(SESSION_USER_ID);
         String role = (String) session.getAttribute(SESSION_USER_ROLE);
 
         if (userId == null) {
@@ -83,8 +81,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-
-    //POST /api/auth/logout
+    // POST /api/auth/logout
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(HttpSession session) {
         session.invalidate();

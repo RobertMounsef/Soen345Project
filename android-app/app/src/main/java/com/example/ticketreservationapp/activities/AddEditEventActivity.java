@@ -28,7 +28,7 @@ public class AddEditEventActivity extends BaseActivity {
     private TextView tvAddEventMessage;
 
     private boolean isEdit = false;
-    private int eventId = -1;
+    private String eventId = null;
     private int availableSpots = 0;
     private String status = "ACTIVE";
 
@@ -51,7 +51,7 @@ public class AddEditEventActivity extends BaseActivity {
         isEdit = getIntent().getBooleanExtra("isEdit", false);
 
         if (isEdit) {
-            eventId = getIntent().getIntExtra("eventId", -1);
+            eventId = getIntent().getStringExtra("eventId");
             availableSpots = getIntent().getIntExtra("availableSpots", 0);
             status = getIntent().getStringExtra("status");
 

@@ -41,23 +41,16 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public void onBindViewHolder(@NonNull ReservationViewHolder holder, int position) {
         Reservation reservation = reservationList.get(position);
 
-        String title = (reservation.getEvent() != null && reservation.getEvent().getTitle() != null)
-                ? reservation.getEvent().getTitle()
+        // Reservation is now flat — show eventId since the nested Event is no longer returned
+        String eventLabel = reservation.getEventId() != null
+                ? "Event ID: " + reservation.getEventId()
                 : "N/A";
 
-        String location = (reservation.getEvent() != null && reservation.getEvent().getLocation() != null)
-                ? reservation.getEvent().getLocation()
-                : "N/A";
-
-        String eventDate = (reservation.getEvent() != null && reservation.getEvent().getEventDate() != null)
-                ? reservation.getEvent().getEventDate()
-                : null;
-
-        holder.tvReservationTitle.setText(title);
-        holder.tvReservationEventDate.setText("Event date: " + DateTimeUtils.formatDateTime(eventDate));
+        holder.tvReservationTitle.setText(eventLabel);
+        holder.tvReservationEventDate.setText("");
         holder.tvReservationDate.setText("Reserved on: " + DateTimeUtils.formatDateTime(reservation.getReservationDate()));
         holder.tvReservationStatus.setText("Status: " + safeText(reservation.getStatus()));
-        holder.tvReservationLocation.setText("Location: " + location);
+        holder.tvReservationLocation.setText("");
 
         holder.btnCancelReservation.setOnClickListener(v -> listener.onCancelClick(reservation));
     }

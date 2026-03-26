@@ -31,16 +31,16 @@ public interface ApiService {
     Call<List<Event>> getEvents();
 
     @GET("api/events/{id}")
-    Call<Event> getEventById(@Path("id") int eventId);
+    Call<Event> getEventById(@Path("id") String eventId);
 
     @POST("api/events")
     Call<Event> createEvent(@Body AddEventRequest addEventRequest);
 
     @PUT("api/events/{id}")
-    Call<Event> updateEvent(@Path("id") int eventId, @Body AddEventRequest request);
+    Call<Event> updateEvent(@Path("id") String eventId, @Body AddEventRequest request);
 
     @DELETE("api/events/{id}")
-    Call<Void> deleteEvent(@Path("id") int eventId);
+    Call<Void> deleteEvent(@Path("id") String eventId);
     @POST("api/reservations")
     Call<Void> reserveEvent(@Body ReservationRequest reservationRequest);
 
@@ -48,7 +48,7 @@ public interface ApiService {
     Call<List<Reservation>> getReservations();
 
     @DELETE("api/reservations/{id}")
-    Call<Void> cancelReservation(@Path("id") int reservationId);
+    Call<Void> cancelReservation(@Path("id") String reservationId);
 
     @POST("api/auth/logout")
     Call<Void> logout();

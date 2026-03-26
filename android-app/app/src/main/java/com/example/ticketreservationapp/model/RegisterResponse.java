@@ -1,14 +1,14 @@
 package com.example.ticketreservationapp.model;
 
 public class RegisterResponse {
-    private Integer userId;
+    private String userId;   // Firebase push key (String, not Integer)
     private String name;
     private String email;
     private String phone;
     private String role;
     private String error;
 
-    public Integer getUserId() {
+    public String getUserId() {
         return userId;
     }
 

@@ -7,7 +7,6 @@ import com.ticket.repository.EventRepository;
 import com.ticket.repository.ReservationRepository;
 import com.ticket.repository.UserRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -34,29 +33,28 @@ public class ReservationService {
         return reservationRepository.findAll();
     }
 
-    public List<Reservation> getReservationsByUserId(Integer userId) {
-        return reservationRepository.findByUser_UserId(userId);
+    public List<Reservation> getReservationsByUserId(String userId) {
+        return reservationRepository.findByUserId(userId);
     }
 
-    public List<Reservation> getReservationsByEventId(Integer eventId) {
-        return reservationRepository.findByEvent_EventId(eventId);
+    public List<Reservation> getReservationsByEventId(String eventId) {
+        return reservationRepository.findByEventId(eventId);
     }
 
-    public Optional<Reservation> getReservationByEventAndUser(Integer eventId, Integer userId) {
-        return reservationRepository.findByEvent_EventIdAndUser_UserId(eventId, userId);
+    public Optional<Reservation> getReservationByEventAndUser(String eventId, String userId) {
+        return reservationRepository.findByEventIdAndUserId(eventId, userId);
     }
 
-    public Optional<Reservation> getReservationById(Integer id) {
+    public Optional<Reservation> getReservationById(String id) {
         return reservationRepository.findById(id);
     }
 
-    @Transactional
     public Reservation createReservation(Reservation reservation) {
-        Integer userId = reservation.getUser().getUserId();
-        Integer eventId = reservation.getEvent().getEventId();
+        String userId = reservation.getUserId();
+        String eventId = reservation.getEventId();
 
         boolean alreadyReserved = reservationRepository
-                .existsByUser_UserIdAndEvent_EventIdAndStatus(
+                .existsByUserIdAndEventIdAndStatus(
                         userId,
                         eventId,
                         Reservation.Status.CONFIRMED
@@ -78,7 +76,7 @@ public class ReservationService {
 
         Reservation saved = reservationRepository.save(reservation);
 
-        User user = userRepository.findById(saved.getUser().getUserId())
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
 
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
@@ -96,17 +94,20 @@ public class ReservationService {
         return saved;
     }
 
-    @Transactional
-    public void deleteReservation(Integer id) {
+    public void deleteReservation(String id) {
         Reservation reservation = reservationRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Reservation not found"));
 
-        Event event = reservation.getEvent();
+        Event event = eventRepository.findById(reservation.getEventId())
+                .orElseThrow(() -> new IllegalArgumentException("Event not found"));
         event.setAvailableSpots(event.getAvailableSpots() + 1);
         eventRepository.save(event);
 
-        String email = reservation.getUser().getEmail();
-        String userName = reservation.getUser().getName();
+        User user = userRepository.findById(reservation.getUserId())
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        String email = user.getEmail();
+        String userName = user.getName();
         String eventTitle = event.getTitle();
 
         if (email != null && !email.isBlank()) {

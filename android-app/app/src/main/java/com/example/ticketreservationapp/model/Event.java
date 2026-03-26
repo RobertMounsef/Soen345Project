@@ -1,8 +1,8 @@
 package com.example.ticketreservationapp.model;
 
 public class Event {
-    private Integer eventId;
-    private Organizer organizer;
+    private String eventId;       // Firebase push key
+    private String organizerId;   // Flat key reference (was nested Organizer object)
     private String title;
     private String category;
     private String eventDate;
@@ -11,12 +11,12 @@ public class Event {
     private Integer availableSpots;
     private String status;
 
-    public Integer getEventId() {
+    public String getEventId() {
         return eventId;
     }
 
-    public Organizer getOrganizer() {
-        return organizer;
+    public String getOrganizerId() {
+        return organizerId;
     }
 
     public String getTitle() {
@@ -45,18 +45,5 @@ public class Event {
 
     public String getStatus() {
         return status;
-    }
-
-    public static class Organizer {
-        private Integer userId;
-        private String name;
-
-        public Integer getUserId() {
-            return userId;
-        }
-
-        public String getName() {
-            return name;
-        }
     }
 }

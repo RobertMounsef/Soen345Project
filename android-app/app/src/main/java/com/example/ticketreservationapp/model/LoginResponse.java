@@ -2,7 +2,7 @@ package com.example.ticketreservationapp.model;
 
 public class LoginResponse {
     private String message;
-    private Integer userId;
+    private String userId;   // Firebase push key (String, not Integer)
     private String role;
     private String error;
 
@@ -10,7 +10,7 @@ public class LoginResponse {
         return message;
     }
 
-    public Integer getUserId() {
+    public String getUserId() {
         return userId;
     }
 

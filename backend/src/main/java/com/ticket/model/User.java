@@ -1,32 +1,15 @@
 package com.ticket.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "users")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer userId;
-
-    @Column(nullable = false)
+    private String userId;
     private String name;
-
-    @Column(unique = true, nullable = false)
     private String email;
-
-    @Column(unique = true)
     private String phone;
-
-    @Column(nullable = false)
     private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private Role role;
-
     private LocalDateTime createdAt = LocalDateTime.now();
     private LocalDateTime lastUpdate = LocalDateTime.now();
 
@@ -38,11 +21,11 @@ public class User {
     // -----------------
     // Getters and Setters
     // -----------------
-    public Integer getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Integer userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 

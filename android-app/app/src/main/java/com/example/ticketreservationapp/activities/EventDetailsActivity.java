@@ -21,7 +21,7 @@ import retrofit2.Response;
 
 public class EventDetailsActivity extends BaseActivity {
 
-    private Integer eventId;
+    private String eventId;  // Firebase push key (String)
     private TextView tvTitle, tvCategory, tvDate, tvLocation, tvSpots, tvStatus, tvReserveMessage;
     private Button btnReserve;
     private boolean isAlreadyReserved = false;
@@ -40,7 +40,7 @@ public class EventDetailsActivity extends BaseActivity {
         tvReserveMessage = findViewById(R.id.tvReserveMessage);
         btnReserve = findViewById(R.id.btnReserveEvent);
 
-        eventId = getIntent().getIntExtra("eventId", -1);
+        eventId = getIntent().getStringExtra("eventId");  // String, not int
 
         btnReserve.setOnClickListener(v -> reserveEvent());
 
@@ -48,7 +48,7 @@ public class EventDetailsActivity extends BaseActivity {
     }
 
     private void loadEventDetails() {
-        if (eventId == null || eventId == -1) {
+        if (eventId == null || eventId.isEmpty()) {
             tvReserveMessage.setText("Invalid event.");
             btnReserve.setEnabled(false);
             return;
@@ -66,8 +66,8 @@ public class EventDetailsActivity extends BaseActivity {
                 public void onResponse(Call<java.util.List<com.example.ticketreservationapp.model.Reservation>> call, Response<java.util.List<com.example.ticketreservationapp.model.Reservation>> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         for (com.example.ticketreservationapp.model.Reservation res : response.body()) {
-                            if (res.getEvent() != null && res.getEvent().getEventId() != null 
-                                && res.getEvent().getEventId().equals(eventId)) {
+                            // Compare flat eventId String
+                            if (eventId.equals(res.getEventId())) {
                                 isAlreadyReserved = true;
                                 break;
                             }
@@ -142,7 +142,7 @@ public class EventDetailsActivity extends BaseActivity {
     }
 
     private void reserveEvent() {
-        if (eventId == null || eventId == -1) {
+        if (eventId == null || eventId.isEmpty()) {
             tvReserveMessage.setText("Invalid event.");
             return;
         }

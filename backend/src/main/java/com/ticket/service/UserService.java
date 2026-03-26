@@ -16,6 +16,18 @@ public class UserService {
     }
 
     public User createUser(User user) {
+        if (user.getName() != null && !user.getName().isBlank()
+                && userRepository.findByName(user.getName()).isPresent()) {
+            throw new IllegalArgumentException("Username already taken");
+        }
+        if (user.getEmail() != null && !user.getEmail().isBlank()
+                && userRepository.findByEmail(user.getEmail()).isPresent()) {
+            throw new IllegalArgumentException("Email already registered");
+        }
+        if (user.getPhone() != null && !user.getPhone().isBlank()
+                && userRepository.findByPhone(user.getPhone()).isPresent()) {
+            throw new IllegalArgumentException("Phone number already registered");
+        }
         return userRepository.save(user);
     }
 

@@ -24,7 +24,10 @@ public class UserController {
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Email is required"));
         }
-        return ResponseEntity.ok(userService.createUser(user));
+        try {
+            return ResponseEntity.ok(userService.createUser(user));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+        }
     }
-
 }

@@ -25,6 +25,7 @@ captures/
 *.keystore
 key.properties
 firebase-service-account.json
+google-services.json
 
 # Logs
 *.log

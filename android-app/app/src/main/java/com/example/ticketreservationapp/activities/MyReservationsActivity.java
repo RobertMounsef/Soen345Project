@@ -21,7 +21,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class MyReservationsActivity extends AppCompatActivity {
+public class MyReservationsActivity extends BaseActivity {
 
     private RecyclerView recyclerViewReservations;
     private TextView tvReservationsMessage;

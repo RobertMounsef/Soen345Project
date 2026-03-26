@@ -20,7 +20,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BaseActivity {
 
     private EditText etIdentifier, etPassword;
     private Button btnLogin, btnGoToRegister;
@@ -80,7 +80,7 @@ public class LoginActivity extends AppCompatActivity {
                     String role = loginResponse.getRole();
 
                     Intent intent;
-                    if ("ADMIN".equalsIgnoreCase(role)) {
+                    if (role != null && ("ORGANIZER".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role))) {
                         intent = new Intent(LoginActivity.this, AdminHomeActivity.class);
                     } else {
                         intent = new Intent(LoginActivity.this, HomeActivity.class);

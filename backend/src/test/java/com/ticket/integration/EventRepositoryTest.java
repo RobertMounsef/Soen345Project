@@ -34,7 +34,7 @@ class EventRepositoryTest {
         organizer.setName("Organizer");
         organizer.setEmail("org@test.com");
         organizer.setPassword("pass");
-        organizer.setRole(User.Role.ADMIN);
+        organizer.setRole(User.Role.ORGANIZER);
         userRepository.save(organizer);
 
         Event jazz = new Event();

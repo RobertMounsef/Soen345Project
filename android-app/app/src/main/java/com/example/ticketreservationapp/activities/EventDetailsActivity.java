@@ -13,16 +13,18 @@ import com.example.ticketreservationapp.api.RetrofitClient;
 import com.example.ticketreservationapp.model.Event;
 import com.example.ticketreservationapp.model.ReservationRequest;
 import com.example.ticketreservationapp.utils.DateTimeUtils;
+import com.example.ticketreservationapp.utils.SessionManager;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class EventDetailsActivity extends AppCompatActivity {
+public class EventDetailsActivity extends BaseActivity {
 
     private Integer eventId;
     private TextView tvTitle, tvCategory, tvDate, tvLocation, tvSpots, tvStatus, tvReserveMessage;
     private Button btnReserve;
+    private boolean isAlreadyReserved = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +58,35 @@ public class EventDetailsActivity extends AppCompatActivity {
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
+        SessionManager sessionManager = new SessionManager(EventDetailsActivity.this);
+        String currentRole = sessionManager.getRole();
+        if ("USER".equalsIgnoreCase(currentRole) || "CUSTOMER".equalsIgnoreCase(currentRole)) {
+            apiService.getReservations().enqueue(new Callback<java.util.List<com.example.ticketreservationapp.model.Reservation>>() {
+                @Override
+                public void onResponse(Call<java.util.List<com.example.ticketreservationapp.model.Reservation>> call, Response<java.util.List<com.example.ticketreservationapp.model.Reservation>> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        for (com.example.ticketreservationapp.model.Reservation res : response.body()) {
+                            if (res.getEvent() != null && res.getEvent().getEventId() != null 
+                                && res.getEvent().getEventId().equals(eventId)) {
+                                isAlreadyReserved = true;
+                                break;
+                            }
+                        }
+                    }
+                    fetchEventData(apiService);
+                }
+
+                @Override
+                public void onFailure(Call<java.util.List<com.example.ticketreservationapp.model.Reservation>> call, Throwable t) {
+                    fetchEventData(apiService);
+                }
+            });
+        } else {
+            fetchEventData(apiService);
+        }
+    }
+
+    private void fetchEventData(ApiService apiService) {
         apiService.getEventById(eventId).enqueue(new Callback<Event>() {
             @Override
             public void onResponse(Call<Event> call, Response<Event> response) {
@@ -71,15 +102,30 @@ public class EventDetailsActivity extends AppCompatActivity {
                     tvStatus.setText("Status: " + safe(event.getStatus()));
                     tvReserveMessage.setText("");
 
-                    boolean canReserve =
-                            event.getAvailableSpots() != null &&
-                                    event.getAvailableSpots() > 0 &&
-                                    "ACTIVE".equalsIgnoreCase(safe(event.getStatus()));
+                    SessionManager sessionManager = new SessionManager(EventDetailsActivity.this);
+                    String currentRole = sessionManager.getRole();
 
-                    btnReserve.setEnabled(canReserve);
+                    if ("ORGANIZER".equalsIgnoreCase(currentRole) || "ADMIN".equalsIgnoreCase(currentRole)) {
+                        btnReserve.setEnabled(false);
+                        btnReserve.setVisibility(android.view.View.GONE);
+                        tvReserveMessage.setText("Organizers cannot reserve events.");
+                    } else if (isAlreadyReserved) {
+                        btnReserve.setVisibility(android.view.View.GONE);
+                        tvReserveMessage.setText("Reserved");
+                    } else {
+                        boolean canReserve =
+                                event.getAvailableSpots() != null &&
+                                        event.getAvailableSpots() > 0 &&
+                                        "ACTIVE".equalsIgnoreCase(safe(event.getStatus()));
 
-                    if (!canReserve) {
-                        tvReserveMessage.setText("This event is not available for reservation.");
+                        btnReserve.setEnabled(canReserve);
+                        btnReserve.setVisibility(canReserve ? android.view.View.VISIBLE : android.view.View.GONE);
+
+                        if (!canReserve) {
+                            tvReserveMessage.setText("This event is not available for reservation.");
+                        } else {
+                            tvReserveMessage.setText("");
+                        }
                     }
                 } else {
                     tvReserveMessage.setText("Failed to load event details.");
@@ -111,19 +157,18 @@ public class EventDetailsActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
+                    isAlreadyReserved = true;
                     Toast.makeText(EventDetailsActivity.this,
                             "Reservation successful",
                             Toast.LENGTH_SHORT).show();
-                    tvReserveMessage.setText("You already reserved this event.");
-                    btnReserve.setEnabled(false);
                     setResult(RESULT_OK);
                     loadEventDetails();
                 } else if (response.code() == 409) {
-                    tvReserveMessage.setText("You already reserved this event.");
-                    btnReserve.setEnabled(false);
+                    isAlreadyReserved = true;
                     Toast.makeText(EventDetailsActivity.this,
                             "You already reserved this event",
                             Toast.LENGTH_SHORT).show();
+                    loadEventDetails();
                 } else {
                     btnReserve.setEnabled(true);
                     tvReserveMessage.setText("Reservation failed.");

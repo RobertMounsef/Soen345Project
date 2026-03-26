@@ -17,7 +17,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class HomeActivity extends AppCompatActivity {
+public class HomeActivity extends BaseActivity {
 
     private TextView tvWelcome;
     private Button btnBrowseEvents, btnMyReservations, btnLogout;
@@ -47,7 +47,8 @@ public class HomeActivity extends AppCompatActivity {
         btnLogout.setOnClickListener(v -> logoutUser());
     }
 
-    private void logoutUser() {
+    @Override
+    protected void logoutUser() {
         btnLogout.setEnabled(false);
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);

@@ -90,7 +90,7 @@ class UserRepositoryTest {
             bob.setName("Bob");
             bob.setEmail("bob@test.com");
             bob.setPassword("pass");
-            bob.setRole(User.Role.ADMIN);
+            bob.setRole(User.Role.ORGANIZER);
 
             User saved = userRepository.save(bob);
 

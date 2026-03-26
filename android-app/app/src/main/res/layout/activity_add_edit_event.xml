@@ -32,12 +32,30 @@
             android:hint="Category"
             android:layout_marginBottom="12dp" />
 
-        <EditText
-            android:id="@+id/etEventDateTime"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Date &amp; Time (example: 2026-04-10T19:00:00)"
-            android:layout_marginBottom="12dp" />
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <EditText
+                android:id="@+id/etEventDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:focusable="false"
+                android:clickable="true"
+                android:hint="Date (e.g. 2026-04-10)"
+                android:layout_marginEnd="8dp" />
+
+            <EditText
+                android:id="@+id/etEventTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:inputType="time"
+                android:hint="Time (e.g. 19:00:00)" />
+        </LinearLayout>
 
         <EditText
             android:id="@+id/etEventLocation"

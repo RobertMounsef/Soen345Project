@@ -57,7 +57,7 @@ public class ManagedEventsActivity extends BaseActivity {
         tvManagedEventsMessage.setText("Loading events...");
 
         SessionManager sessionManager = new SessionManager(this);
-        int currentUserId = sessionManager.getUserId();
+        String currentUserId = sessionManager.getUserId();  // Now a String
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
         apiService.getEvents().enqueue(new Callback<List<Event>>() {
@@ -67,9 +67,8 @@ public class ManagedEventsActivity extends BaseActivity {
                     managedEvents.clear();
 
                     for (Event event : response.body()) {
-                        if (event.getOrganizer() != null
-                                && event.getOrganizer().getUserId() != null
-                                && event.getOrganizer().getUserId() == currentUserId) {
+                        // Use flat organizerId String instead of nested Organizer object
+                        if (currentUserId != null && currentUserId.equals(event.getOrganizerId())) {
                             managedEvents.add(event);
                         }
                     }
@@ -97,7 +96,7 @@ public class ManagedEventsActivity extends BaseActivity {
     private void editEvent(Event event) {
         Intent intent = new Intent(this, AddEditEventActivity.class);
         intent.putExtra("isEdit", true);
-        intent.putExtra("eventId", event.getEventId());
+        intent.putExtra("eventId", event.getEventId());  // String
         intent.putExtra("title", event.getTitle());
         intent.putExtra("category", event.getCategory());
         intent.putExtra("eventDate", event.getEventDate());

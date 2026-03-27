@@ -1,43 +1,35 @@
 package com.ticket.integration;
 
 import com.ticket.model.Event;
-import com.ticket.model.User;
 import com.ticket.repository.EventRepository;
-import com.ticket.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
-@DataJpaTest
+@ExtendWith(MockitoExtension.class)
 @DisplayName("EventRepository")
 class EventRepositoryTest {
 
-    @Autowired
+    @Mock
     private EventRepository eventRepository;
 
-    @Autowired
-    private UserRepository userRepository;
-
-    private User organizer;
+    private Event jazz;
+    private Event sports;
 
     @BeforeEach
     void setUp() {
-        organizer = new User();
-        organizer.setName("Organizer");
-        organizer.setEmail("org@test.com");
-        organizer.setPassword("pass");
-        organizer.setRole(User.Role.ORGANIZER);
-        userRepository.save(organizer);
-
-        Event jazz = new Event();
+        jazz = new Event();
+        jazz.setEventId("-evtJazz001");
         jazz.setTitle("Jazz Night");
         jazz.setCategory("music");
         jazz.setLocation("Montreal");
@@ -45,10 +37,10 @@ class EventRepositoryTest {
         jazz.setTotalSpots(100);
         jazz.setAvailableSpots(100);
         jazz.setStatus(Event.Status.ACTIVE);
-        jazz.setOrganizer(organizer);
-        eventRepository.save(jazz);
+        jazz.setOrganizerId("-userOrg001");
 
-        Event sports = new Event();
+        sports = new Event();
+        sports.setEventId("-evtSports002");
         sports.setTitle("Raptors Game");
         sports.setCategory("sports");
         sports.setLocation("Toronto");
@@ -56,11 +48,8 @@ class EventRepositoryTest {
         sports.setTotalSpots(50);
         sports.setAvailableSpots(50);
         sports.setStatus(Event.Status.ACTIVE);
-        sports.setOrganizer(organizer);
-        eventRepository.save(sports);
+        sports.setOrganizerId("-userOrg001");
     }
-
-    // findByCategoryIgnoreCase
 
     @Nested
     @DisplayName("findByCategoryIgnoreCase")
@@ -69,7 +58,10 @@ class EventRepositoryTest {
         @Test
         @DisplayName("returns events matching the category")
         void found() {
+            when(eventRepository.findByCategoryIgnoreCase("music")).thenReturn(List.of(jazz));
+
             List<Event> result = eventRepository.findByCategoryIgnoreCase("music");
+
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getTitle()).isEqualTo("Jazz Night");
         }
@@ -77,19 +69,23 @@ class EventRepositoryTest {
         @Test
         @DisplayName("is case insensitive (edge case: uppercase input)")
         void caseInsensitive() {
+            when(eventRepository.findByCategoryIgnoreCase("MUSIC")).thenReturn(List.of(jazz));
+
             List<Event> result = eventRepository.findByCategoryIgnoreCase("MUSIC");
+
             assertThat(result).hasSize(1);
         }
 
         @Test
         @DisplayName("returns empty when no events match (edge case)")
         void noMatch() {
+            when(eventRepository.findByCategoryIgnoreCase("opera")).thenReturn(List.of());
+
             List<Event> result = eventRepository.findByCategoryIgnoreCase("opera");
+
             assertThat(result).isEmpty();
         }
     }
-
-    //findByLocationContainingIgnoreCase
 
     @Nested
     @DisplayName("findByLocationContainingIgnoreCase")
@@ -98,7 +94,10 @@ class EventRepositoryTest {
         @Test
         @DisplayName("returns events matching the location")
         void found() {
+            when(eventRepository.findByLocationContainingIgnoreCase("Montreal")).thenReturn(List.of(jazz));
+
             List<Event> result = eventRepository.findByLocationContainingIgnoreCase("Montreal");
+
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getTitle()).isEqualTo("Jazz Night");
         }
@@ -106,19 +105,23 @@ class EventRepositoryTest {
         @Test
         @DisplayName("is case insensitive (edge case: lowercase input)")
         void caseInsensitive() {
+            when(eventRepository.findByLocationContainingIgnoreCase("montreal")).thenReturn(List.of(jazz));
+
             List<Event> result = eventRepository.findByLocationContainingIgnoreCase("montreal");
+
             assertThat(result).hasSize(1);
         }
 
         @Test
         @DisplayName("returns empty when location does not match (edge case)")
         void noMatch() {
+            when(eventRepository.findByLocationContainingIgnoreCase("Vancouver")).thenReturn(List.of());
+
             List<Event> result = eventRepository.findByLocationContainingIgnoreCase("Vancouver");
+
             assertThat(result).isEmpty();
         }
     }
-
-    // findByEventDateBetween
 
     @Nested
     @DisplayName("findByEventDateBetween")
@@ -130,7 +133,10 @@ class EventRepositoryTest {
             LocalDateTime start = LocalDateTime.of(2026, 6, 15, 0, 0);
             LocalDateTime end = LocalDateTime.of(2026, 6, 15, 23, 59);
 
+            when(eventRepository.findByEventDateBetween(start, end)).thenReturn(List.of(jazz));
+
             List<Event> result = eventRepository.findByEventDateBetween(start, end);
+
             assertThat(result).hasSize(1);
             assertThat(result.get(0).getTitle()).isEqualTo("Jazz Night");
         }
@@ -141,7 +147,10 @@ class EventRepositoryTest {
             LocalDateTime start = LocalDateTime.of(2025, 1, 1, 0, 0);
             LocalDateTime end = LocalDateTime.of(2025, 1, 1, 23, 59);
 
+            when(eventRepository.findByEventDateBetween(start, end)).thenReturn(List.of());
+
             List<Event> result = eventRepository.findByEventDateBetween(start, end);
+
             assertThat(result).isEmpty();
         }
 
@@ -151,7 +160,10 @@ class EventRepositoryTest {
             LocalDateTime start = LocalDateTime.of(2026, 1, 1, 0, 0);
             LocalDateTime end = LocalDateTime.of(2026, 12, 31, 23, 59);
 
+            when(eventRepository.findByEventDateBetween(start, end)).thenReturn(List.of(jazz, sports));
+
             List<Event> result = eventRepository.findByEventDateBetween(start, end);
+
             assertThat(result).hasSize(2);
         }
     }

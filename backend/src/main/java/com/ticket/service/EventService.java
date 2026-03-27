@@ -21,7 +21,7 @@ public class EventService {
         return eventRepository.findAll();
     }
 
-    public Optional<Event> getEventById(Integer id) {
+    public Optional<Event> getEventById(String id) {
         return eventRepository.findById(id);
     }
 
@@ -30,7 +30,7 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public Event updateEvent(Integer id, Event updatedEvent) {
+    public Event updateEvent(String id, Event updatedEvent) {
         Event event = eventRepository.findById(id).orElseThrow();
         event.setTitle(updatedEvent.getTitle());
         event.setCategory(updatedEvent.getCategory());
@@ -42,7 +42,7 @@ public class EventService {
         return eventRepository.save(event);
     }
 
-    public void deleteEvent(Integer id) {
+    public void deleteEvent(String id) {
         eventRepository.deleteById(id);
     }
 
@@ -54,7 +54,6 @@ public class EventService {
         return eventRepository.findByLocationContainingIgnoreCase(location);
     }
 
-    
     public List<Event> searchByDate(LocalDate date) {
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.atTime(23, 59, 59);

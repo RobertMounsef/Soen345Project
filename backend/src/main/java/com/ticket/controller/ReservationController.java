@@ -31,10 +31,10 @@ public class ReservationController {
         this.eventService = eventService;
     }
 
-    // GET /api/reservations - CUSTOMER → all of their own reservations (across all events) - ADMIN → all reservations belonging to their own events
+    // GET /api/reservations - CUSTOMER → all of their own reservations - ORGANIZER → reservations for their events
     @GetMapping
     public ResponseEntity<?> getReservations(HttpSession session) {
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -42,26 +42,27 @@ public class ReservationController {
         }
 
         if ("CUSTOMER".equals(role)) {
-            // Customer sees all their own reservations
             return ResponseEntity.ok(reservationService.getReservationsByUserId(sessionUserId));
         } else {
-            // Admin sees reservations only for events they organise
-            List<Reservation> adminReservations = reservationService.getAllReservations()
+            // Organizer sees reservations only for events they organise
+            List<Reservation> orgReservations = reservationService.getAllReservations()
                     .stream()
-                    .filter(r -> r.getEvent().getOrganizer().getUserId().equals(sessionUserId))
+                    .filter(r -> {
+                        Event event = eventService.getEventById(r.getEventId()).orElse(null);
+                        return event != null && sessionUserId.equals(event.getOrganizerId());
+                    })
                     .toList();
-            return ResponseEntity.ok(adminReservations);
+            return ResponseEntity.ok(orgReservations);
         }
     }
 
-
-    // GET /api/reservations/event/{eventId} - CUSTOMER → their own reservation for that event (single object or 404) ADMIN → all reservations for that event, only if they organise it
+    // GET /api/reservations/event/{eventId}
     @GetMapping("/event/{eventId}")
     public ResponseEntity<?> getReservationsForEvent(
-            @PathVariable Integer eventId,
+            @PathVariable String eventId,
             HttpSession session) {
 
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -69,17 +70,15 @@ public class ReservationController {
         }
 
         if ("CUSTOMER".equals(role)) {
-            // Customer: return their single reservation for this event, if any
             return reservationService.getReservationByEventAndUser(eventId, sessionUserId)
                     .<ResponseEntity<?>>map(ResponseEntity::ok)
                     .orElse(ResponseEntity.notFound().build());
         } else {
-            // Admin: must own the event
             Event event = eventService.getEventById(eventId).orElse(null);
             if (event == null) {
                 return ResponseEntity.notFound().build();
             }
-            if (!event.getOrganizer().getUserId().equals(sessionUserId)) {
+            if (!sessionUserId.equals(event.getOrganizerId())) {
                 return ResponseEntity.status(403)
                         .body(Map.of("error", "You can only view reservations for your own events"));
             }
@@ -87,10 +86,10 @@ public class ReservationController {
         }
     }
 
-    // GET /api/reservations/{id} - CUSTOMER → only their own - ADMIN → only if they organise the related event
+    // GET /api/reservations/{id}
     @GetMapping("/{id}")
-    public ResponseEntity<?> getReservationById(@PathVariable Integer id, HttpSession session) {
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+    public ResponseEntity<?> getReservationById(@PathVariable String id, HttpSession session) {
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -103,12 +102,12 @@ public class ReservationController {
         }
 
         if ("CUSTOMER".equals(role)) {
-            if (!reservation.getUser().getUserId().equals(sessionUserId)) {
+            if (!reservation.getUserId().equals(sessionUserId)) {
                 return ResponseEntity.status(403).body(Map.of("error", "Access denied"));
             }
         } else {
-            // Admin must organise the event this reservation belongs to
-            if (!reservation.getEvent().getOrganizer().getUserId().equals(sessionUserId)) {
+            Event event = eventService.getEventById(reservation.getEventId()).orElse(null);
+            if (event == null || !sessionUserId.equals(event.getOrganizerId())) {
                 return ResponseEntity.status(403)
                         .body(Map.of("error", "You can only view reservations for your own events"));
             }
@@ -123,7 +122,7 @@ public class ReservationController {
             @RequestBody Reservation reservation,
             HttpSession session) {
 
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -134,9 +133,7 @@ public class ReservationController {
         }
 
         // Force the reservation to belong to the logged-in customer
-        com.ticket.model.User owner = new com.ticket.model.User();
-        owner.setUserId(sessionUserId);
-        reservation.setUser(owner);
+        reservation.setUserId(sessionUserId);
 
         try {
             return ResponseEntity.ok(reservationService.createReservation(reservation));
@@ -149,8 +146,8 @@ public class ReservationController {
 
     // DELETE /api/reservations/{id} — CUSTOMER only (their own)
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteReservation(@PathVariable Integer id, HttpSession session) {
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+    public ResponseEntity<?> deleteReservation(@PathVariable String id, HttpSession session) {
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -164,7 +161,7 @@ public class ReservationController {
         if (reservation == null) {
             return ResponseEntity.notFound().build();
         }
-        if (!reservation.getUser().getUserId().equals(sessionUserId)) {
+        if (!reservation.getUserId().equals(sessionUserId)) {
             return ResponseEntity.status(403).body(Map.of("error", "You can only cancel your own reservations"));
         }
 

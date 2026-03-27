@@ -1,27 +1,18 @@
 package com.ticket.model;
 
-import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "reservations")
 public class Reservation {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer reservationId;
+    private String reservationId;
 
-    @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    /** Firebase push key of the User who made the reservation */
+    private String userId;
 
-    @ManyToOne
-    @JoinColumn(name = "event_id", nullable = false)
-    private Event event;
+    /** Firebase push key of the Event being reserved */
+    private String eventId;
 
     private LocalDateTime reservationDate = LocalDateTime.now();
-
-    @Enumerated(EnumType.STRING)
     private Status status = Status.CONFIRMED;
 
     public enum Status {
@@ -31,28 +22,28 @@ public class Reservation {
 
     // Getters and Setters
 
-    public Integer getReservationId() {
+    public String getReservationId() {
         return reservationId;
     }
 
-    public void setReservationId(Integer reservationId) {
+    public void setReservationId(String reservationId) {
         this.reservationId = reservationId;
     }
 
-    public User getUser() {
-        return user;
+    public String getUserId() {
+        return userId;
     }
 
-    public void setUser(User user) {
-        this.user = user;
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
-    public Event getEvent() {
-        return event;
+    public String getEventId() {
+        return eventId;
     }
 
-    public void setEvent(Event event) {
-        this.event = event;
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 
     public LocalDateTime getReservationDate() {

@@ -42,9 +42,9 @@ class ReservationServiceTest {
     @InjectMocks
     private ReservationService reservationService;
 
-    // Shared fixture helpers
+    // ── Shared fixture helpers ────────────────────────────────────────
 
-    private User makeUser(Integer id, String name, String email) {
+    private User makeUser(String id, String name, String email) {
         User u = new User();
         u.setUserId(id);
         u.setName(name);
@@ -54,24 +54,23 @@ class ReservationServiceTest {
         return u;
     }
 
-    private Event makeEvent(Integer id, String title, int total, int available) {
-        User organizer = makeUser(99, "Organizer", "org@test.com");
+    private Event makeEvent(String id, String title, int total, int available) {
         Event e = new Event();
         e.setEventId(id);
         e.setTitle(title);
         e.setTotalSpots(total);
         e.setAvailableSpots(available);
         e.setEventDate(LocalDateTime.now().plusDays(7));
-        e.setOrganizer(organizer);
+        e.setOrganizerId("-orgUser99");
         e.setStatus(Event.Status.ACTIVE);
         return e;
     }
 
-    private Reservation makeReservation(Integer id, User user, Event event) {
+    private Reservation makeReservation(String id, String userId, String eventId) {
         Reservation r = new Reservation();
         r.setReservationId(id);
-        r.setUser(user);
-        r.setEvent(event);
+        r.setUserId(userId);
+        r.setEventId(eventId);
         r.setStatus(Reservation.Status.CONFIRMED);
         return r;
     }
@@ -79,13 +78,16 @@ class ReservationServiceTest {
     private User alice;
     private Event jazzNight;
 
+    private static final String ALICE_ID = "-user001";
+    private static final String JAZZ_ID  = "-evt010";
+
     @BeforeEach
     void setUp() {
-        alice = makeUser(1, "Alice", "alice@test.com");
-        jazzNight = makeEvent(10, "Jazz Night", 100, 5);
+        alice     = makeUser(ALICE_ID, "Alice", "alice@test.com");
+        jazzNight = makeEvent(JAZZ_ID, "Jazz Night", 100, 5);
     }
 
-    //getAllReservations
+    // ── getAllReservations ────────────────────────────────────────────
 
     @Nested
     @DisplayName("getAllReservations")
@@ -94,7 +96,7 @@ class ReservationServiceTest {
         @Test
         @DisplayName("returns all reservations from repository")
         void returnsAll() {
-            Reservation r = makeReservation(1, alice, jazzNight);
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
             when(reservationRepository.findAll()).thenReturn(List.of(r));
 
             assertThat(reservationService.getAllReservations()).containsExactly(r);
@@ -108,7 +110,7 @@ class ReservationServiceTest {
         }
     }
 
-    //getReservationsByUserId
+    // ── getReservationsByUserId ───────────────────────────────────────
 
     @Nested
     @DisplayName("getReservationsByUserId")
@@ -117,21 +119,21 @@ class ReservationServiceTest {
         @Test
         @DisplayName("returns reservations belonging to the given user")
         void returnsUserReservations() {
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findByUser_UserId(1)).thenReturn(List.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
+            when(reservationRepository.findByUserId(ALICE_ID)).thenReturn(List.of(r));
 
-            assertThat(reservationService.getReservationsByUserId(1)).containsExactly(r);
+            assertThat(reservationService.getReservationsByUserId(ALICE_ID)).containsExactly(r);
         }
 
         @Test
         @DisplayName("returns empty list when user has no reservations (edge case)")
         void noReservations() {
-            when(reservationRepository.findByUser_UserId(1)).thenReturn(List.of());
-            assertThat(reservationService.getReservationsByUserId(1)).isEmpty();
+            when(reservationRepository.findByUserId(ALICE_ID)).thenReturn(List.of());
+            assertThat(reservationService.getReservationsByUserId(ALICE_ID)).isEmpty();
         }
     }
 
-    //getReservationsByEventId
+    // ── getReservationsByEventId ──────────────────────────────────────
 
     @Nested
     @DisplayName("getReservationsByEventId")
@@ -140,21 +142,21 @@ class ReservationServiceTest {
         @Test
         @DisplayName("returns all reservations for the given event")
         void returnsEventReservations() {
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findByEvent_EventId(10)).thenReturn(List.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
+            when(reservationRepository.findByEventId(JAZZ_ID)).thenReturn(List.of(r));
 
-            assertThat(reservationService.getReservationsByEventId(10)).containsExactly(r);
+            assertThat(reservationService.getReservationsByEventId(JAZZ_ID)).containsExactly(r);
         }
 
         @Test
         @DisplayName("returns empty list when no one has booked (edge case)")
         void noBookings() {
-            when(reservationRepository.findByEvent_EventId(10)).thenReturn(List.of());
-            assertThat(reservationService.getReservationsByEventId(10)).isEmpty();
+            when(reservationRepository.findByEventId(JAZZ_ID)).thenReturn(List.of());
+            assertThat(reservationService.getReservationsByEventId(JAZZ_ID)).isEmpty();
         }
     }
 
-    //getReservationByEventAndUser
+    // ── getReservationByEventAndUser ──────────────────────────────────
 
     @Nested
     @DisplayName("getReservationByEventAndUser")
@@ -163,21 +165,23 @@ class ReservationServiceTest {
         @Test
         @DisplayName("returns reservation when user has booked that event")
         void found() {
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findByEvent_EventIdAndUser_UserId(10, 1)).thenReturn(Optional.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
+            when(reservationRepository.findByEventIdAndUserId(JAZZ_ID, ALICE_ID))
+                    .thenReturn(Optional.of(r));
 
-            assertThat(reservationService.getReservationByEventAndUser(10, 1)).contains(r);
+            assertThat(reservationService.getReservationByEventAndUser(JAZZ_ID, ALICE_ID)).contains(r);
         }
 
         @Test
         @DisplayName("returns empty when user has not booked that event (edge case)")
         void notBooked() {
-            when(reservationRepository.findByEvent_EventIdAndUser_UserId(10, 1)).thenReturn(Optional.empty());
-            assertThat(reservationService.getReservationByEventAndUser(10, 1)).isEmpty();
+            when(reservationRepository.findByEventIdAndUserId(JAZZ_ID, ALICE_ID))
+                    .thenReturn(Optional.empty());
+            assertThat(reservationService.getReservationByEventAndUser(JAZZ_ID, ALICE_ID)).isEmpty();
         }
     }
 
-    //createReservation
+    // ── createReservation ─────────────────────────────────────────────
 
     @Nested
     @DisplayName("createReservation")
@@ -186,12 +190,12 @@ class ReservationServiceTest {
         @Test
         @DisplayName("happy path: decrements availableSpots and saves reservation")
         void decrementsSpots() {
-            Reservation toSave = makeReservation(null, alice, jazzNight);
-            Reservation saved = makeReservation(1, alice, jazzNight);
+            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
+            Reservation saved  = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
-            when(userRepository.findById(1)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -202,12 +206,12 @@ class ReservationServiceTest {
         @Test
         @DisplayName("sends confirmation email after successful reservation")
         void sendsConfirmationEmail() {
-            Reservation toSave = makeReservation(null, alice, jazzNight);
-            Reservation saved = makeReservation(1, alice, jazzNight);
+            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
+            Reservation saved  = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
-            when(userRepository.findById(1)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -218,8 +222,8 @@ class ReservationServiceTest {
         @DisplayName("throws IllegalStateException when event is sold out (edge case)")
         void soldOut() {
             jazzNight.setAvailableSpots(0);
-            Reservation r = makeReservation(null, alice, jazzNight);
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            Reservation r = makeReservation(null, ALICE_ID, JAZZ_ID);
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
 
             assertThatThrownBy(() -> reservationService.createReservation(r))
                     .isInstanceOf(IllegalStateException.class)
@@ -230,12 +234,12 @@ class ReservationServiceTest {
         @DisplayName("throws IllegalStateException when exactly 1 spot remains and is taken (boundary)")
         void lastSpotTaken() {
             jazzNight.setAvailableSpots(1);
-            Reservation toSave = makeReservation(null, alice, jazzNight);
-            Reservation saved = makeReservation(1, alice, jazzNight);
+            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
+            Reservation saved  = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
-            when(userRepository.findById(1)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -245,8 +249,8 @@ class ReservationServiceTest {
         @Test
         @DisplayName("throws IllegalArgumentException when event does not exist (edge case)")
         void eventNotFound() {
-            Reservation r = makeReservation(null, alice, jazzNight);
-            when(eventRepository.findById(10)).thenReturn(Optional.empty());
+            Reservation r = makeReservation(null, ALICE_ID, JAZZ_ID);
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.empty());
 
             assertThatThrownBy(() -> reservationService.createReservation(r))
                     .isInstanceOf(IllegalArgumentException.class)
@@ -257,12 +261,12 @@ class ReservationServiceTest {
         @DisplayName("skips sending email when user email is blank (edge case)")
         void noEmailSentWhenBlank() {
             alice.setEmail(""); // blank email
-            Reservation toSave = makeReservation(null, alice, jazzNight);
-            Reservation saved = makeReservation(1, alice, jazzNight);
+            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
+            Reservation saved  = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
-            when(userRepository.findById(1)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -273,21 +277,20 @@ class ReservationServiceTest {
         @DisplayName("does not decrement spots when save throws (exception safety)")
         void doesNotDecrementOnSaveFailure() {
             int spotsBefore = jazzNight.getAvailableSpots();
-            Reservation toSave = makeReservation(null, alice, jazzNight);
+            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
 
-            when(eventRepository.findById(10)).thenReturn(Optional.of(jazzNight));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenThrow(new RuntimeException("DB error"));
 
             assertThatThrownBy(() -> reservationService.createReservation(toSave))
                     .isInstanceOf(RuntimeException.class);
 
-            // spots were decremented before save — this documents the current
-            // (pre-transaction) behaviour
+            // spots were decremented before save — this documents the current behaviour
             assertThat(jazzNight.getAvailableSpots()).isEqualTo(spotsBefore - 1);
         }
     }
 
-    //deleteReservation
+    // ── deleteReservation ─────────────────────────────────────────────
 
     @Nested
     @DisplayName("deleteReservation")
@@ -297,23 +300,29 @@ class ReservationServiceTest {
         @DisplayName("happy path: increments availableSpots and deletes reservation")
         void incrementsSpotsAndDeletes() {
             int spotsBefore = jazzNight.getAvailableSpots();
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findById(1)).thenReturn(Optional.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            reservationService.deleteReservation(1);
+            when(reservationRepository.findById("-res001")).thenReturn(Optional.of(r));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+
+            reservationService.deleteReservation("-res001");
 
             assertThat(jazzNight.getAvailableSpots()).isEqualTo(spotsBefore + 1);
             verify(eventRepository).save(jazzNight);
-            verify(reservationRepository).deleteById(1);
+            verify(reservationRepository).deleteById("-res001");
         }
 
         @Test
         @DisplayName("sends cancellation email after successful deletion")
         void sendsCancellationEmail() {
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findById(1)).thenReturn(Optional.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            reservationService.deleteReservation(1);
+            when(reservationRepository.findById("-res001")).thenReturn(Optional.of(r));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+
+            reservationService.deleteReservation("-res001");
 
             verify(emailService).sendReservationCancellation("alice@test.com", "Alice", "Jazz Night");
         }
@@ -321,9 +330,9 @@ class ReservationServiceTest {
         @Test
         @DisplayName("throws IllegalArgumentException when reservation does not exist (edge case)")
         void notFound() {
-            when(reservationRepository.findById(99)).thenReturn(Optional.empty());
+            when(reservationRepository.findById("-res999")).thenReturn(Optional.empty());
 
-            assertThatThrownBy(() -> reservationService.deleteReservation(99))
+            assertThatThrownBy(() -> reservationService.deleteReservation("-res999"))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Reservation not found");
         }
@@ -332,10 +341,13 @@ class ReservationServiceTest {
         @DisplayName("skips sending email when user email is blank (edge case)")
         void noEmailWhenBlank() {
             alice.setEmail(null);
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findById(1)).thenReturn(Optional.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            reservationService.deleteReservation(1);
+            when(reservationRepository.findById("-res001")).thenReturn(Optional.of(r));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+
+            reservationService.deleteReservation("-res001");
 
             verify(emailService, never()).sendReservationCancellation(any(), any(), any());
         }
@@ -344,10 +356,13 @@ class ReservationServiceTest {
         @DisplayName("spots are restored even if only one spot was remaining (boundary)")
         void spotsRestoredFromZero() {
             jazzNight.setAvailableSpots(0);
-            Reservation r = makeReservation(1, alice, jazzNight);
-            when(reservationRepository.findById(1)).thenReturn(Optional.of(r));
+            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
 
-            reservationService.deleteReservation(1);
+            when(reservationRepository.findById("-res001")).thenReturn(Optional.of(r));
+            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+
+            reservationService.deleteReservation("-res001");
 
             assertThat(jazzNight.getAvailableSpots()).isEqualTo(1);
         }

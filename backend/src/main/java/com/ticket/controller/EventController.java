@@ -47,7 +47,7 @@ public class EventController {
 
     // GET /api/events/{id} – public
     @GetMapping("/{id}")
-    public ResponseEntity<?> getEventById(@PathVariable Integer id) {
+    public ResponseEntity<?> getEventById(@PathVariable String id) {
         return eventService.getEventById(id)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -59,7 +59,7 @@ public class EventController {
             @RequestBody Event event,
             HttpSession session) {
 
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -69,9 +69,7 @@ public class EventController {
             return ResponseEntity.status(403).body(Map.of("error", "Only organizers can create events"));
         }
 
-        com.ticket.model.User organizer = new com.ticket.model.User();
-        organizer.setUserId(sessionUserId);
-        event.setOrganizer(organizer);
+        event.setOrganizerId(sessionUserId);
 
         return ResponseEntity.ok(eventService.createEvent(event));
     }
@@ -79,11 +77,11 @@ public class EventController {
     // PUT /api/events/{id} - ORGANIZER only, and only the organizer of that event.
     @PutMapping("/{id}")
     public ResponseEntity<?> updateEvent(
-            @PathVariable Integer id,
+            @PathVariable String id,
             @RequestBody Event updatedEvent,
             HttpSession session) {
 
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -97,7 +95,7 @@ public class EventController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-        if (!existing.getOrganizer().getUserId().equals(sessionUserId)) {
+        if (!existing.getOrganizerId().equals(sessionUserId)) {
             return ResponseEntity.status(403)
                     .body(Map.of("error", "You can only edit your own events"));
         }
@@ -108,10 +106,10 @@ public class EventController {
     // DELETE /api/events/{id} - ORGANIZER only, and only the organizer of that event.
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteEvent(
-            @PathVariable Integer id,
+            @PathVariable String id,
             HttpSession session) {
 
-        Integer sessionUserId = (Integer) session.getAttribute(AuthController.SESSION_USER_ID);
+        String sessionUserId = (String) session.getAttribute(AuthController.SESSION_USER_ID);
         String role = (String) session.getAttribute(AuthController.SESSION_USER_ROLE);
 
         if (sessionUserId == null) {
@@ -125,7 +123,7 @@ public class EventController {
         if (existing == null) {
             return ResponseEntity.notFound().build();
         }
-        if (!existing.getOrganizer().getUserId().equals(sessionUserId)) {
+        if (!existing.getOrganizerId().equals(sessionUserId)) {
             return ResponseEntity.status(403)
                     .body(Map.of("error", "You can only delete your own events"));
         }

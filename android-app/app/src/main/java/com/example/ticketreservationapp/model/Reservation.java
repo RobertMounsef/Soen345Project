@@ -1,13 +1,22 @@
 package com.example.ticketreservationapp.model;
 
 public class Reservation {
-    private Integer reservationId;
+    private String reservationId;  // Firebase push key
+    private String userId;         // Flat key reference
+    private String eventId;        // Flat key reference
     private String reservationDate;
     private String status;
-    private Event event;
 
-    public Integer getReservationId() {
+    public String getReservationId() {
         return reservationId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public String getEventId() {
+        return eventId;
     }
 
     public String getReservationDate() {
@@ -16,9 +25,5 @@ public class Reservation {
 
     public String getStatus() {
         return status;
-    }
-
-    public Event getEvent() {
-        return event;
     }
 }

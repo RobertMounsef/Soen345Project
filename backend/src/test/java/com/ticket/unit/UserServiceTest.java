@@ -33,7 +33,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         alice = new User();
-        alice.setUserId(1);
+        alice.setUserId("-user001");
         alice.setName("Alice");
         alice.setEmail("alice@test.com");
         alice.setPhone("5140001111");

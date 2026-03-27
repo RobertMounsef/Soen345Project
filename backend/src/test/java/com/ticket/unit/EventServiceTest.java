@@ -1,7 +1,6 @@
 package com.ticket.unit;
 
 import com.ticket.model.Event;
-import com.ticket.model.User;
 import com.ticket.repository.EventRepository;
 import com.ticket.service.EventService;
 
@@ -35,11 +34,8 @@ class EventServiceTest {
     private EventService eventService;
 
     // ── Shared test fixture ─────────────────────────────────────────
-    private Event makeEvent(Integer id, String title, String category, String location,
+    private Event makeEvent(String id, String title, String category, String location,
             int total, int available, LocalDateTime date) {
-        User organizer = new User();
-        organizer.setUserId(10);
-
         Event e = new Event();
         e.setEventId(id);
         e.setTitle(title);
@@ -48,7 +44,7 @@ class EventServiceTest {
         e.setTotalSpots(total);
         e.setAvailableSpots(available);
         e.setEventDate(date);
-        e.setOrganizer(organizer);
+        e.setOrganizerId("-orgUser10");
         e.setStatus(Event.Status.ACTIVE);
         return e;
     }
@@ -57,7 +53,7 @@ class EventServiceTest {
 
     @BeforeEach
     void setUp() {
-        jazz = makeEvent(1, "Jazz Night", "music", "Montreal", 100, 100,
+        jazz = makeEvent("-evt001", "Jazz Night", "music", "Montreal", 100, 100,
                 LocalDateTime.of(2025, 4, 20, 19, 0));
     }
 
@@ -82,7 +78,7 @@ class EventServiceTest {
         }
     }
 
-    // getEventById 
+    // getEventById
 
     @Nested
     @DisplayName("getEventById")
@@ -91,15 +87,15 @@ class EventServiceTest {
         @Test
         @DisplayName("returns event when found")
         void found() {
-            when(eventRepository.findById(1)).thenReturn(Optional.of(jazz));
-            assertThat(eventService.getEventById(1)).contains(jazz);
+            when(eventRepository.findById("-evt001")).thenReturn(Optional.of(jazz));
+            assertThat(eventService.getEventById("-evt001")).contains(jazz);
         }
 
         @Test
         @DisplayName("returns empty when event does not exist (edge case)")
         void notFound() {
-            when(eventRepository.findById(99)).thenReturn(Optional.empty());
-            assertThat(eventService.getEventById(99)).isEmpty();
+            when(eventRepository.findById("-evt999")).thenReturn(Optional.empty());
+            assertThat(eventService.getEventById("-evt999")).isEmpty();
         }
     }
 
@@ -140,7 +136,7 @@ class EventServiceTest {
         }
     }
 
-    //updateEvent 
+    // updateEvent
 
     @Nested
     @DisplayName("updateEvent")
@@ -153,10 +149,10 @@ class EventServiceTest {
                     200, 150, LocalDateTime.of(2025, 5, 1, 20, 0));
             updated.setStatus(Event.Status.INACTIVE);
 
-            when(eventRepository.findById(1)).thenReturn(Optional.of(jazz));
+            when(eventRepository.findById("-evt001")).thenReturn(Optional.of(jazz));
             when(eventRepository.save(any(Event.class))).thenAnswer(inv -> inv.getArgument(0));
 
-            Event result = eventService.updateEvent(1, updated);
+            Event result = eventService.updateEvent("-evt001", updated);
 
             assertThat(result.getTitle()).isEqualTo("Blues Night");
             assertThat(result.getCategory()).isEqualTo("blues");
@@ -169,13 +165,13 @@ class EventServiceTest {
         @Test
         @DisplayName("throws when event id does not exist (edge case)")
         void eventNotFound() {
-            when(eventRepository.findById(99)).thenReturn(Optional.empty());
-            assertThatThrownBy(() -> eventService.updateEvent(99, jazz))
+            when(eventRepository.findById("-evt999")).thenReturn(Optional.empty());
+            assertThatThrownBy(() -> eventService.updateEvent("-evt999", jazz))
                     .isInstanceOf(NoSuchElementException.class);
         }
     }
 
-    //deleteEvent
+    // deleteEvent
 
     @Nested
     @DisplayName("deleteEvent")
@@ -184,12 +180,12 @@ class EventServiceTest {
         @Test
         @DisplayName("delegates to repository deleteById")
         void delegates() {
-            eventService.deleteEvent(1);
-            verify(eventRepository).deleteById(1);
+            eventService.deleteEvent("-evt001");
+            verify(eventRepository).deleteById("-evt001");
         }
     }
 
-    //searchByCategory
+    // searchByCategory
 
     @Nested
     @DisplayName("searchByCategory")
@@ -217,7 +213,7 @@ class EventServiceTest {
         }
     }
 
-    //searchByLocation
+    // searchByLocation
 
     @Nested
     @DisplayName("searchByLocation")
@@ -238,7 +234,7 @@ class EventServiceTest {
         }
     }
 
-    //searchByDate
+    // searchByDate
 
     @Nested
     @DisplayName("searchByDate")

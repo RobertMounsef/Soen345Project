@@ -15,15 +15,16 @@ public class SessionManager {
         prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
     }
 
-    public void saveSession(Integer userId, String role) {
+    /** Save the Firebase push-key userId (String) and role to SharedPreferences. */
+    public void saveSession(String userId, String role) {
         prefs.edit()
-                .putInt(KEY_USER_ID, userId != null ? userId : -1)
+                .putString(KEY_USER_ID, userId)
                 .putString(KEY_ROLE, role)
                 .apply();
     }
 
-    public int getUserId() {
-        return prefs.getInt(KEY_USER_ID, -1);
+    public String getUserId() {
+        return prefs.getString(KEY_USER_ID, null);
     }
 
     public String getRole() {

@@ -55,6 +55,56 @@ class UserServiceTest {
             assertThat(result).isEqualTo(alice);
             verify(userRepository).save(alice);
         }
+
+        @Test
+        @DisplayName("allows phone-only registration when email is blank")
+        void phoneOnly() {
+            User phoneUser = new User();
+            phoneUser.setName("Bob");
+            phoneUser.setEmail("");
+            phoneUser.setPhone("5145550199");
+            phoneUser.setPassword("secret");
+            phoneUser.setRole(User.Role.CUSTOMER);
+            when(userRepository.findByName("Bob")).thenReturn(Optional.empty());
+            when(userRepository.findByPhone("5145550199")).thenReturn(Optional.empty());
+            when(userRepository.save(phoneUser)).thenReturn(phoneUser);
+
+            User result = userService.createUser(phoneUser);
+
+            assertThat(result.getPhone()).isEqualTo("5145550199");
+            verify(userRepository).save(phoneUser);
+        }
+
+        @Test
+        @DisplayName("throws when neither email nor phone is provided")
+        void rejectsMissingContact() {
+            User bad = new User();
+            bad.setName("x");
+            bad.setPassword("p");
+            bad.setRole(User.Role.CUSTOMER);
+
+            assertThatThrownBy(() -> userService.createUser(bad))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Email or phone");
+        }
+
+        @Test
+        @DisplayName("throws when name is blank")
+        void rejectsBlankName() {
+            alice.setName("  ");
+            assertThatThrownBy(() -> userService.createUser(alice))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Name");
+        }
+
+        @Test
+        @DisplayName("throws when password is blank")
+        void rejectsBlankPassword() {
+            alice.setPassword("");
+            assertThatThrownBy(() -> userService.createUser(alice))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Password");
+        }
     }
 
     @Nested

@@ -16,16 +16,24 @@ public class UserService {
     }
 
     public User createUser(User user) {
-        if (user.getName() != null && !user.getName().isBlank()
-                && userRepository.findByName(user.getName()).isPresent()) {
+        boolean hasEmail = user.getEmail() != null && !user.getEmail().isBlank();
+        boolean hasPhone = user.getPhone() != null && !user.getPhone().isBlank();
+        if (!hasEmail && !hasPhone) {
+            throw new IllegalArgumentException("Email or phone number is required");
+        }
+        if (user.getName() == null || user.getName().isBlank()) {
+            throw new IllegalArgumentException("Name is required");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new IllegalArgumentException("Password is required");
+        }
+        if (userRepository.findByName(user.getName()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
-        if (user.getEmail() != null && !user.getEmail().isBlank()
-                && userRepository.findByEmail(user.getEmail()).isPresent()) {
+        if (hasEmail && userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already registered");
         }
-        if (user.getPhone() != null && !user.getPhone().isBlank()
-                && userRepository.findByPhone(user.getPhone()).isPresent()) {
+        if (hasPhone && userRepository.findByPhone(user.getPhone()).isPresent()) {
             throw new IllegalArgumentException("Phone number already registered");
         }
         return userRepository.save(user);

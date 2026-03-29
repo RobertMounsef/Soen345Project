@@ -54,8 +54,12 @@ public class RegisterActivity extends BaseActivity {
         String phone = etPhone.getText().toString().trim();
         String password = etRegisterPassword.getText().toString().trim();
 
-        if (name.isEmpty() || email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Name, email, and password are required", Toast.LENGTH_SHORT).show();
+        if (name.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Name and password are required", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (email.isEmpty() && phone.isEmpty()) {
+            Toast.makeText(this, "Provide an email or a phone number", Toast.LENGTH_SHORT).show();
             return;
         }
 

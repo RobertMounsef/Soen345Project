@@ -19,29 +19,30 @@ public class EventController {
         this.eventService = eventService;
     }
 
-    // GET /api/events – public, with optional search filters
+    // GET /api/events – public, with optional search filters (combined when multiple params are set)
     @GetMapping
     public ResponseEntity<?> getAllEvents(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) String date) {
 
-        if (category != null && !category.isBlank()) {
-            return ResponseEntity.ok(eventService.searchByCategory(category));
-        }
-        if (location != null && !location.isBlank()) {
-            return ResponseEntity.ok(eventService.searchByLocation(location));
-        }
+        LocalDate parsed = null;
         if (date != null && !date.isBlank()) {
             try {
-                LocalDate parsed = LocalDate.parse(date);
-                return ResponseEntity.ok(eventService.searchByDate(parsed));
+                parsed = LocalDate.parse(date);
             } catch (Exception e) {
                 return ResponseEntity.badRequest()
                         .body(Map.of("error", "Invalid date format. Use yyyy-MM-dd"));
             }
         }
 
+        boolean anyFilter = (category != null && !category.isBlank())
+                || (location != null && !location.isBlank())
+                || parsed != null;
+
+        if (anyFilter) {
+            return ResponseEntity.ok(eventService.searchEvents(category, location, parsed));
+        }
         return ResponseEntity.ok(eventService.getAllEvents());
     }
 

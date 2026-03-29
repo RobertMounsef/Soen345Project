@@ -59,4 +59,33 @@ public class EventService {
         LocalDateTime end = date.atTime(23, 59, 59);
         return eventRepository.findByEventDateBetween(start, end);
     }
+
+    /**
+     * Applies category, location, and date filters together (AND). Any parameter may be null/blank to skip that filter.
+     */
+    public List<Event> searchEvents(String category, String location, LocalDate date) {
+        List<Event> list = eventRepository.findAll();
+        if (category != null && !category.isBlank()) {
+            list = list.stream()
+                    .filter(e -> category.equalsIgnoreCase(e.getCategory()))
+                    .toList();
+        }
+        if (location != null && !location.isBlank()) {
+            String loc = location.toLowerCase();
+            list = list.stream()
+                    .filter(e -> e.getLocation() != null
+                            && e.getLocation().toLowerCase().contains(loc))
+                    .toList();
+        }
+        if (date != null) {
+            LocalDateTime start = date.atStartOfDay();
+            LocalDateTime end = date.atTime(23, 59, 59);
+            list = list.stream()
+                    .filter(e -> e.getEventDate() != null
+                            && !e.getEventDate().isBefore(start)
+                            && !e.getEventDate().isAfter(end))
+                    .toList();
+        }
+        return list;
+    }
 }

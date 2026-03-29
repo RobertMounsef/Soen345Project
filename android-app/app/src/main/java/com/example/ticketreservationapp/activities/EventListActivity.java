@@ -79,7 +79,7 @@ public class EventListActivity extends BaseActivity {
 
         ApiService apiService = RetrofitClient.getClient().create(ApiService.class);
 
-        apiService.getEvents().enqueue(new Callback<List<Event>>() {
+        apiService.getEvents(null, null, null).enqueue(new Callback<List<Event>>() {
             @Override
             public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
                 if (response.isSuccessful() && response.body() != null) {

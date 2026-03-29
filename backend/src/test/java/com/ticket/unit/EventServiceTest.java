@@ -264,4 +264,34 @@ class EventServiceTest {
             assertThat(eventService.searchByDate(date)).isEmpty();
         }
     }
+
+    @Nested
+    @DisplayName("searchEvents (combined filters)")
+    class SearchEventsCombined {
+
+        @Test
+        @DisplayName("applies category, location, and date together (AND)")
+        void andsAllFilters() {
+            Event montrealMusic = makeEvent("-e1", "Show A", "music", "Montreal", 50, 50,
+                    LocalDateTime.of(2025, 6, 10, 19, 0));
+            Event montrealSports = makeEvent("-e2", "Game B", "sports", "Montreal", 50, 50,
+                    LocalDateTime.of(2025, 6, 10, 14, 0));
+            Event torontoMusic = makeEvent("-e3", "Show C", "music", "Toronto", 50, 50,
+                    LocalDateTime.of(2025, 6, 10, 19, 0));
+
+            when(eventRepository.findAll()).thenReturn(List.of(montrealMusic, montrealSports, torontoMusic));
+
+            LocalDate day = LocalDate.of(2025, 6, 10);
+            List<Event> result = eventService.searchEvents("music", "Montreal", day);
+
+            assertThat(result).containsExactly(montrealMusic);
+        }
+
+        @Test
+        @DisplayName("returns all events when all filter parameters are null")
+        void noFiltersReturnsAll() {
+            when(eventRepository.findAll()).thenReturn(List.of(jazz));
+            assertThat(eventService.searchEvents(null, null, null)).containsExactly(jazz);
+        }
+    }
 }

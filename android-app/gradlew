@@ -131,6 +131,21 @@ if [ -n "$JAVA_HOME" ] ; then
 Please set the JAVA_HOME variable in your environment to match the
 location of your Java installation."
     fi
+    # AGP needs jlink; some IDE JREs omit it — prefer Android Studio's JBR when possible.
+    if [ ! -x "$JAVA_HOME/bin/jlink" ]; then
+        if [ -x "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/jlink" ]; then
+            JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+            JAVACMD="$JAVA_HOME/bin/java"
+        elif [ "$msys" = "true" ] || [ "$cygwin" = "true" ]; then
+            if [ -x "/c/Program Files/Android/Android Studio/jbr/bin/jlink" ]; then
+                JAVA_HOME="/c/Program Files/Android/Android Studio/jbr"
+                JAVACMD="$JAVA_HOME/bin/java"
+            fi
+        elif [ -x "/opt/android-studio/jbr/bin/jlink" ]; then
+            JAVA_HOME="/opt/android-studio/jbr"
+            JAVACMD="$JAVA_HOME/bin/java"
+        fi
+    fi
 else
     JAVACMD=java
     if ! command -v java >/dev/null 2>&1

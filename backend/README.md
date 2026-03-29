@@ -1,70 +1,119 @@
-# Backend - SOEN345 Project
-This is the **backend** of the SOEN345 Cloud-based Ticket Reservation Application.  
-It is built with **Spring Boot**, connects to **PostgreSQL**, and is designed to be deployed to the cloud.  
+# Backend — SOEN345 Ticket Reservation
+
+Spring Boot REST API for the ticket reservation app. It uses **Firebase Realtime Database** for persistence and **SMTP** (Gmail, Mailtrap, etc.) for reservation emails.
+
 ---
-## Project Structure
+
+## Project structure
+
 ```
 backend/
-├── .mvn/
-│   └── wrapper/          # Maven wrapper files
-├── src/
-│   ├── main/
-│   │   ├── java/com/ticket/
-│   │   │   ├── controller/    # REST controllers (API endpoints)
-│   │   │   ├── model/         # JPA entity classes
-│   │   │   ├── repository/    # Spring Data JPA repositories
-│   │   │   ├── service/       # Service classes (business logic)
-│   │   │   └── BackendApplication.java  # Spring Boot main class
-│   │   └── resources/
-│   │       └── application.properties  # Spring Boot config
-│   └── test/
-│       ├── java/com/ticket/
-│       │   ├── unit/          # Unit tests
-│       │   └── integration/   # Integration tests
-│       └── resources/
-│           └── application.properties  # H2 in-memory config for tests
-├── .github/
-│   └── workflows/
-│       └── ci.yml            # GitHub Actions CI/CD
-├── .gitignore
-├── mvnw                      # Maven wrapper for Unix
-├── mvnw.cmd                  # Maven wrapper for Windows
-├── pom.xml                   # Maven build configuration
-└── README.md
+├── src/main/java/com/ticket/
+│   ├── controller/     # REST endpoints
+│   ├── model/          # Domain types (User, Event, Reservation)
+│   ├── repository/     # Firebase-backed repositories
+│   ├── service/        # Business logic, email, optional SMS
+│   └── config/
+├── src/main/resources/
+│   ├── application.properties                    # Safe defaults (safe to commit)
+│   ├── application-local.properties.example      # Template for secrets (commit this)
+│   ├── application-local.properties              # Your secrets (gitignored — create locally)
+│   └── firebase-service-account.json             # Firebase Admin key (gitignored)
+├── src/test/...
+├── pom.xml
+└── mvnw / mvnw.cmd
 ```
+
 ---
-## Dependencies / Tools Needed
-- **Java 17+** (ensure `JAVA_HOME` is set)  
-- **Maven** (uses `mvnw` wrapper included in the project)  
-- **Spring Boot 3**  
-- **PostgreSQL** (local or cloud instance)  
+
+## Requirements
+
+- **Java 17+** (`JAVA_HOME` set correctly; Android-style JDK issues on Windows: use a full JDK with `jlink`, e.g. Android Studio’s JBR)
+- **Maven** (or use `./mvnw` / `mvnw.cmd` in this folder)
+- **Firebase** project with Realtime Database enabled
+- **SMTP** access if you want real emails (Gmail App Password or Mailtrap)
+
 ---
-## Project Set-up (Temporary for Local Hosting)
-1. **Create the database**  
-- Open PostgreSQL and create a database named `soen345db`.
-2. **Update credentials**  
-- In `src/main/resources/application.properties`, replace the placeholders with your actual credentials:
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/soen345db
-spring.datasource.username=ACTUAL_USERNAME
-spring.datasource.password=ACTUAL_PASSWORD
-spring.mail.username=MAILTRAP_USERNAME
-spring.mail.password=MAILTRAP_PASSWORD
-spirng.mail.port= ACTUAL_PORT
+
+## Local setup
+
+### 1. Firebase service account
+
+1. In [Firebase Console](https://console.firebase.google.com) → Project settings → Service accounts → Generate new private key.
+2. Save the JSON file as:
+
+   `src/main/resources/firebase-service-account.json`
+
+3. Do **not** commit this file. It is listed in `.gitignore` at the repo root and under `backend/.gitignore`.
+
+### 2. Mail and other secrets (`application-local.properties`)
+
+Shared settings (database URL, ports, etc.) live in **`application.properties`**. Anything secret or personal belongs in **`application-local.properties`**, which is **gitignored** and loaded automatically via:
+
+`spring.config.import=optional:classpath:application-local.properties`
+
+**Steps:**
+
+1. Copy the example file:
+
+   `src/main/resources/application-local.properties.example`
+   → `src/main/resources/application-local.properties`
+
+2. Edit `application-local.properties` and set at least:
+
+   - **`spring.mail.username`** — e.g. your Gmail address
+   - **`spring.mail.password`** — Gmail **App password** (Google Account → Security → App passwords), not your normal login password
+   - **`app.mail.from`** — usually the same as `spring.mail.username` (or a verified “Send mail as” alias)
+
+3. Optional: **Mailtrap** — use the SMTP user/password from your Mailtrap inbox instead; messages stay in Mailtrap’s UI only (good for testing).
+
+4. Optional **Twilio** credentials can go in the same local file if you use SMS (`app.sms.*`).
+
+If `application-local.properties` is missing, the app still starts, but mail credentials will be incomplete until you add that file.
+
+### 3. Run
+
+```bash
+cd backend
+./mvnw spring-boot:run        # Unix / Git Bash
+mvnw.cmd spring-boot:run      # Windows cmd/PowerShell
 ```
-3. **Navigate to backend folder**
-- `cd SOEN345Project/backend`
-4. **Run the application**
-- `./mvnw spring-boot:run`
+
+API base URL is typically `http://localhost:8080` unless you change the port.
+
 ---
+
+## What must not be pushed to GitHub
+
+These paths are ignored; keep them **only** on your machine (or share secrets through a password manager / env vars, not the repo):
+
+| Item | Purpose |
+|------|--------|
+| `firebase-service-account.json` | Firebase Admin SDK key |
+| `application-local.properties` | Mail password, optional Twilio, overrides |
+| `../android-app/**/local.properties` | Android SDK path (root `.gitignore`) |
+| `**/google-services.json` | Firebase Android config (if present) |
+| `*.jks`, `*.keystore`, `key.properties` | Signing keys |
+
+**Committed** on purpose: `application.properties` (no secrets), `application-local.properties.example` (template only).
+
+If a secret was ever committed, rotate it (new Gmail app password, new Firebase key) and use `git rm --cached <file>` so Git stops tracking the file while keeping it on disk.
+
+---
+
 ## Testing
-Tests are written with **JUnit 5**, **Mockito**, and **Spring Boot Test**.
 
-There are two separate `application.properties` files:
-- `src/main/resources/application.properties` — real PostgreSQL + Mailtrap credentials, used when running the app
-- `src/test/resources/application.properties` — H2 in-memory database + fake mail credentials, used automatically when running tests
+- **JUnit 5**, **Mockito**, **Spring Boot Test**
+- **`src/test/resources/application.properties`** — stub SMTP settings for tests (no real mail required)
 
-To run all tests:
-- `./mvnw test`
+```bash
+./mvnw test
+```
 
-Tests also run automatically on every push and pull request to `main` via GitHub Actions.
+CI runs the same on pushes/PRs to `main` (see `.github/workflows/ci.yml` in the repo root).
+
+---
+
+## API overview
+
+See **`API_DOCUMENTATION.md`** in this folder for endpoints, request bodies, and session-based auth.

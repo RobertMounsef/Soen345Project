@@ -1,5 +1,6 @@
 package com.ticket.service;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -8,15 +9,18 @@ import org.springframework.stereotype.Service;
 public class EmailService {
 
     private final JavaMailSender mailSender;
+    private final String fromAddress;
 
-    public EmailService(JavaMailSender mailSender) {
+    public EmailService(JavaMailSender mailSender,
+            @Value("${app.mail.from:noreply@ticket.local}") String fromAddress) {
         this.mailSender = mailSender;
+        this.fromAddress = fromAddress;
     }
 
-   // Sends a reservation confirmation email to the user.
     public void sendReservationConfirmation(String toEmail, String userName, String eventTitle) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
+        message.setFrom(fromAddress);
+        message.setTo(toEmail.trim());
         message.setSubject("Reservation Confirmed – " + eventTitle);
         message.setText(
                 "Hi " + userName + ",\n\n" +
@@ -26,11 +30,10 @@ public class EmailService {
         mailSender.send(message);
     }
 
-    
-    // Sends a cancellation confirmation email to the user.
     public void sendReservationCancellation(String toEmail, String userName, String eventTitle) {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(toEmail);
+        message.setFrom(fromAddress);
+        message.setTo(toEmail.trim());
         message.setSubject("Reservation Cancelled – " + eventTitle);
         message.setText(
                 "Hi " + userName + ",\n\n" +

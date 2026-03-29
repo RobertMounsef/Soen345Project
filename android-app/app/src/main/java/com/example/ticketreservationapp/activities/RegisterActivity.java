@@ -16,6 +16,8 @@ import com.example.ticketreservationapp.api.RetrofitClient;
 import com.example.ticketreservationapp.model.RegisterRequest;
 import com.example.ticketreservationapp.model.RegisterResponse;
 
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -61,6 +63,9 @@ public class RegisterActivity extends BaseActivity {
         if (email.isEmpty() && phone.isEmpty()) {
             Toast.makeText(this, "Provide an email or a phone number", Toast.LENGTH_SHORT).show();
             return;
+        }
+        if (!email.isEmpty()) {
+            email = email.toLowerCase(Locale.ROOT);
         }
 
         btnRegister.setEnabled(false);

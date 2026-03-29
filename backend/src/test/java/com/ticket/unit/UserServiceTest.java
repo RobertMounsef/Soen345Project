@@ -134,6 +134,14 @@ class UserServiceTest {
 
             assertThat(userService.findByEmailAndPassword("unknown@test.com", "pass123")).isEmpty();
         }
+
+        @Test
+        @DisplayName("repository resolves case-insensitive email (mixed case in lookup)")
+        void emailCaseInsensitive() {
+            when(userRepository.findByEmail("ALICE@test.com")).thenReturn(Optional.of(alice));
+
+            assertThat(userService.findByEmailAndPassword("ALICE@test.com", "pass123")).contains(alice);
+        }
     }
 
     @Nested

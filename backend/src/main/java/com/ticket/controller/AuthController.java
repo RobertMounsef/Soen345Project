@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 
@@ -32,6 +33,12 @@ public class AuthController {
 
         String identifier = loginRequest.getIdentifier();
         String password = loginRequest.getPassword();
+
+        if (identifier != null && identifier.contains("@")) {
+            identifier = identifier.trim().toLowerCase(Locale.ROOT);
+        } else if (identifier != null) {
+            identifier = identifier.trim();
+        }
 
         if (identifier == null || identifier.isBlank() || password == null || password.isBlank()) {
             return ResponseEntity.badRequest()

@@ -16,6 +16,8 @@ import com.example.ticketreservationapp.model.LoginRequest;
 import com.example.ticketreservationapp.model.LoginResponse;
 import com.example.ticketreservationapp.utils.SessionManager;
 
+import java.util.Locale;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,6 +50,10 @@ public class LoginActivity extends BaseActivity {
     private void loginUser() {
         String identifier = etIdentifier.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
+
+        if (identifier.contains("@")) {
+            identifier = identifier.toLowerCase(Locale.ROOT);
+        }
 
         if (identifier.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show();

@@ -4,6 +4,7 @@ import com.ticket.model.User;
 import com.ticket.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
 import java.util.Optional;
 
 @Service
@@ -35,6 +36,12 @@ public class UserService {
         }
         if (hasPhone && userRepository.findByPhone(user.getPhone()).isPresent()) {
             throw new IllegalArgumentException("Phone number already registered");
+        }
+        if (hasEmail) {
+            user.setEmail(user.getEmail().trim().toLowerCase(Locale.ROOT));
+        }
+        if (hasPhone && user.getPhone() != null) {
+            user.setPhone(user.getPhone().trim());
         }
         return userRepository.save(user);
     }

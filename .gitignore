@@ -24,8 +24,21 @@ captures/
 *.jks
 *.keystore
 key.properties
-firebase-service-account.json
-google-services.json
+
+# Firebase & mobile (keep out of Git — share with teammates securely)
+**/firebase-service-account.json
+**/google-services.json
+
+# Backend: local mail / Twilio overrides (template: application-local.properties.example)
+backend/src/main/resources/application-local.properties
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# OS
+Thumbs.db
 
 # Logs
 *.log

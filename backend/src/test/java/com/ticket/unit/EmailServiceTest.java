@@ -1,11 +1,11 @@
 package com.ticket.unit;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.mail.SimpleMailMessage;
@@ -23,8 +23,12 @@ class EmailServiceTest {
     @Mock
     private JavaMailSender mailSender;
 
-    @InjectMocks
     private EmailService emailService;
+
+    @BeforeEach
+    void setUp() {
+        emailService = new EmailService(mailSender, "noreply@test.org");
+    }
 
     //sendReservationConfirmation
 
@@ -41,6 +45,7 @@ class EmailServiceTest {
             verify(mailSender).send(captor.capture());
 
             assertThat(captor.getValue().getTo()).contains("alice@test.com");
+            assertThat(captor.getValue().getFrom()).isEqualTo("noreply@test.org");
         }
 
         @Test

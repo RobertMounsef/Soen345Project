@@ -48,8 +48,13 @@ public class UserRepository {
     }
 
     public Optional<User> findByEmail(String email) {
+        if (email == null || email.isBlank()) {
+            return Optional.empty();
+        }
+        String needle = email.trim();
         return findAll().stream()
-                .filter(u -> email.equals(u.getEmail()))
+                .filter(u -> u.getEmail() != null
+                        && needle.equalsIgnoreCase(u.getEmail().trim()))
                 .findFirst();
     }
 

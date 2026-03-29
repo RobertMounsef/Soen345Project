@@ -57,6 +57,29 @@ goto fail
 set JAVA_HOME=%JAVA_HOME:"=%
 set JAVA_EXE=%JAVA_HOME%/bin/java.exe
 
+@rem Android Gradle Plugin needs a full JDK with jlink. Cursor/VS Code often set JAVA_HOME to a
+@rem minimal JRE (Red Hat Java extension) where bin\jlink.exe is missing — builds then fail on
+@rem JdkImageTransform. Prefer Android Studio's embedded JDK when that happens.
+if exist "%JAVA_HOME%\bin\jlink.exe" goto findJavaFromJavaHome_verify
+
+@rem Use full paths for JAVA_EXE inside (...) — %JAVA_HOME% would expand too early (old value).
+if exist "%ProgramFiles%\Android\Android Studio\jbr\bin\jlink.exe" (
+  set "JAVA_HOME=%ProgramFiles%\Android\Android Studio\jbr"
+  set "JAVA_EXE=%ProgramFiles%\Android\Android Studio\jbr\bin\java.exe"
+  goto findJavaFromJavaHome_verify
+)
+if exist "%LOCALAPPDATA%\Programs\Android\Android Studio\jbr\bin\jlink.exe" (
+  set "JAVA_HOME=%LOCALAPPDATA%\Programs\Android\Android Studio\jbr"
+  set "JAVA_EXE=%LOCALAPPDATA%\Programs\Android\Android Studio\jbr\bin\java.exe"
+  goto findJavaFromJavaHome_verify
+)
+if exist "%ProgramFiles(x86)%\Android\Android Studio\jbr\bin\jlink.exe" (
+  set "JAVA_HOME=%ProgramFiles(x86)%\Android\Android Studio\jbr"
+  set "JAVA_EXE=%ProgramFiles(x86)%\Android\Android Studio\jbr\bin\java.exe"
+  goto findJavaFromJavaHome_verify
+)
+
+:findJavaFromJavaHome_verify
 if exist "%JAVA_EXE%" goto execute
 
 echo. 1>&2

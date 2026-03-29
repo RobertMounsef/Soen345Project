@@ -20,14 +20,14 @@ public class UserController {
     // POST /api/users – Public (registration)
     @PostMapping
     public ResponseEntity<?> createUser(@RequestBody User user) {
-        if (user.getEmail() == null || user.getEmail().isBlank()) {
-            return ResponseEntity.badRequest()
-                    .body(Map.of("error", "Email is required"));
-        }
         try {
             return ResponseEntity.ok(userService.createUser(user));
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(409).body(Map.of("error", e.getMessage()));
+            String msg = e.getMessage();
+            if (msg != null && (msg.contains("required") || msg.contains("Required"))) {
+                return ResponseEntity.badRequest().body(Map.of("error", msg));
+            }
+            return ResponseEntity.status(409).body(Map.of("error", msg));
         }
     }
 }

@@ -6,6 +6,8 @@ import com.ticket.model.User;
 import com.ticket.repository.EventRepository;
 import com.ticket.repository.ReservationRepository;
 import com.ticket.repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -14,18 +16,23 @@ import java.util.Optional;
 @Service
 public class ReservationService {
 
+    private static final Logger log = LoggerFactory.getLogger(ReservationService.class);
+
     private final ReservationRepository reservationRepository;
     private final EventRepository eventRepository;
     private final EmailService emailService;
+    private final SmsService smsService;
     private final UserRepository userRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
                               EventRepository eventRepository,
                               EmailService emailService,
+                              SmsService smsService,
                               UserRepository userRepository) {
         this.reservationRepository = reservationRepository;
         this.eventRepository = eventRepository;
         this.emailService = emailService;
+        this.smsService = smsService;
         this.userRepository = userRepository;
     }
 
@@ -90,6 +97,14 @@ public class ReservationService {
                 System.out.println("Email failed, but reservation was created: " + e.getMessage());
             }
         }
+        if (user.getPhone() != null && !user.getPhone().isBlank()) {
+            try {
+                smsService.sendReservationConfirmation(
+                        user.getPhone(), user.getName(), event.getTitle());
+            } catch (Exception e) {
+                System.out.println("SMS failed, but reservation was created: " + e.getMessage());
+            }
+        }
 
         return saved;
     }
@@ -114,7 +129,15 @@ public class ReservationService {
             try {
                 emailService.sendReservationCancellation(email, userName, eventTitle);
             } catch (Exception e) {
-                System.out.println("Cancellation email failed, but reservation was deleted: " + e.getMessage());
+                log.warn("Cancellation email failed for reservation {}: {}", id, e.toString());
+            }
+        }
+        String phone = user.getPhone();
+        if (phone != null && !phone.isBlank()) {
+            try {
+                smsService.sendReservationCancellation(phone, userName, eventTitle);
+            } catch (Exception e) {
+                log.warn("Cancellation SMS failed for reservation {}: {}", id, e.toString());
             }
         }
 

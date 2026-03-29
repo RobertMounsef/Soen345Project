@@ -18,6 +18,7 @@ import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.PUT;
+import retrofit2.http.Query;
 
 public interface ApiService {
 
@@ -28,7 +29,10 @@ public interface ApiService {
     Call<RegisterResponse> register(@Body RegisterRequest registerRequest);
 
     @GET("api/events")
-    Call<List<Event>> getEvents();
+    Call<List<Event>> getEvents(
+            @Query("category") String category,
+            @Query("location") String location,
+            @Query("date") String date);
 
     @GET("api/events/{id}")
     Call<Event> getEventById(@Path("id") String eventId);

@@ -52,8 +52,11 @@ jobs:
       - name: Run Android instrumented UI tests (Espresso)
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
-          target: google_apis
+          api-level: 31
+          target: default
           arch: arm64-v8a
+          force-avd-creation: false
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           script: ./gradlew connectedDebugAndroidTest
           working-directory: android-app

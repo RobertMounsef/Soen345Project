@@ -240,6 +240,7 @@ class ReservationServiceTest {
             when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
             when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -282,6 +283,7 @@ class ReservationServiceTest {
             Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
 
             when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
             when(reservationRepository.save(toSave)).thenThrow(new RuntimeException("DB error"));
 
             assertThatThrownBy(() -> reservationService.createReservation(toSave))

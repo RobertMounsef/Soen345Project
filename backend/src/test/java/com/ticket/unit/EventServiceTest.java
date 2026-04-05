@@ -2,7 +2,9 @@ package com.ticket.unit;
 
 import com.ticket.model.Event;
 import com.ticket.repository.EventRepository;
+import com.ticket.repository.ReservationRepository;
 import com.ticket.service.EventService;
+import com.ticket.model.Reservation;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -29,6 +31,9 @@ class EventServiceTest {
 
     @Mock
     private EventRepository eventRepository;
+
+    @Mock
+    private ReservationRepository reservationRepository;
 
     @InjectMocks
     private EventService eventService;
@@ -178,9 +183,18 @@ class EventServiceTest {
     class DeleteEvent {
 
         @Test
-        @DisplayName("delegates to repository deleteById")
+        @DisplayName("marks associated reservations as REMOVED_BY_ORGANIZER and then deletes event")
         void delegates() {
+            Reservation r1 = new Reservation();
+            r1.setReservationId("-res001");
+            r1.setStatus(Reservation.Status.CONFIRMED);
+
+            when(reservationRepository.findByEventId("-evt001")).thenReturn(List.of(r1));
+
             eventService.deleteEvent("-evt001");
+
+            assertThat(r1.getStatus()).isEqualTo(Reservation.Status.REMOVED_BY_ORGANIZER);
+            verify(reservationRepository).save(r1);
             verify(eventRepository).deleteById("-evt001");
         }
     }

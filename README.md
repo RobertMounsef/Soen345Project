@@ -9,7 +9,7 @@
 | **FR3** | Search & Filter | Customer | Filter by date, location, or category. | Improves usability for large event databases. |
 | **FR4** | Reservation | Customer | Users can reserve tickets digitally. | Primary objective of the application. |
 | **FR5** | Cancellation | Customer | Users can cancel existing reservations. | Necessary for user flexibility and seat recovery. |
-| **FR6** | Confirmations | Customer | Receive digital confirmation via email/SMS. | Provides proof of purchase for the user. |
+| **FR6** | Confirmations | Customer | Receive digital confirmation via email. | Provides proof of purchase for the user. |
 | **FR7** | Event Management | Admin | Add, edit, or cancel events. | Allows organizers to maintain real-time data. |
 
 ### Non-Functional Requirements (NFR)
@@ -23,8 +23,8 @@
 We utilize a **Decoupled Client-Server Architecture**:
 
 * **Presentation Layer (Frontend):** Developed natively for **Android using Java and XML**. This ensures a highly responsive, Material-compliant, mobile-first professional UI.
-* **Application Layer (Backend):** A **Spring Boot (Java)** RESTful API managing the business logic, reservation validation, and endpoint security.
-* **Data Layer:** Hosted on **Firebase Realtime Database** for NoSQL cloud-based persistent storage, ensuring 99.9% high availability and seamless JSON data-sync.
+* **Application Layer (Backend):** A **Spring Boot (Java 17)** RESTful API managing the business logic, reservation validation, and endpoint security. Optimized with **Asynchronous Processing** for non-blocking email notifications.
+* **Data Layer:** Hosted on **Firebase Realtime Database** for NoSQL cloud-based persistent storage. Includes an automated **DatabaseSeeder** for rapid environment setup.
 
 ### Design Elements
 * **ER Diagram:** (https://drive.google.com/file/d/1LYcdCFUCBTYCgRVb8Z5pxiwDWKllbz8b/view?usp=sharing)
@@ -45,9 +45,10 @@ Testing was strictly integrated into our SDLC to guarantee production-ready soft
 
 | Test Level | Scope | Tooling |
 | :--- | :--- | :--- |
-| **Unit Testing** | Individual Java models and utility functions run locally on the host JVM. | JUnit 4/5 |
+| **Unit Testing** | Individual Java models and utility functions run locally on the host JVM. | JUnit 5 & Mockito |
 | **Integration Testing** | Framework configurations (e.g., verifying Android `SharedPreferences` saves). | AndroidJUnit4 & InstrumentationRegistry |
 | **System/UI Testing** | Full user reservation flows, layout bounds checking, and navigational intents. | Espresso UI Testing Framework |
+| **Business Logic Testing** | Comprehensive service-level verification ensuring data integrity on cascade deletions. | Mockito & Spring Test |
 
 ### Continuous Integration (CI/CD)
 * **GitHub Actions** serves as our primary Automated CI tool. 
@@ -58,6 +59,6 @@ Testing was strictly integrated into our SDLC to guarantee production-ready soft
 
 ## 5. Project Tools
 * **IDE:** Android Studio & IntelliJ IDEA
-* **Language:** Java (Android + Spring Boot)
-* **Testing:** JUnit, Espresso
+* **Language:** Java 17 (Spring Boot) & Android Java
+* **Testing:** JUnit 5, Mockito, Espresso
 * **CI/CD:** GitHub Actions

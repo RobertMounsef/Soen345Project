@@ -29,7 +29,7 @@ jobs:
         working-directory: backend
 
   android-test:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
 
     steps:
       - name: Checkout code
@@ -45,6 +45,15 @@ jobs:
         run: chmod +x gradlew
         working-directory: android-app
 
-      - name: Run Android unit tests
+      - name: Run Android local unit tests
         run: ./gradlew testDebugUnitTest
         working-directory: android-app
+
+      - name: Run Android instrumented UI tests (Espresso)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          script: ./gradlew connectedDebugAndroidTest
+          working-directory: android-app

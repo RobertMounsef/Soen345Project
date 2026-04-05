@@ -94,7 +94,6 @@ public class ReservationService {
                 System.out.println("Email failed, but reservation was created: " + e.getMessage());
             }
         }
-        }
 
         return saved;
     }
@@ -121,7 +120,6 @@ public class ReservationService {
             } catch (Exception e) {
                 log.warn("Cancellation email failed for reservation {}: {}", id, e.toString());
             }
-        }
         }
 
         reservationRepository.deleteById(id);

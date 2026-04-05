@@ -1,0 +1,458 @@
+@startuml SOEN345_TicketReservation_ClassDiagram
+title SOEN 345 Ticket Reservation System — Class Diagram
+
+' --- Layout Compaction Parameters ---
+skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 40
+skinparam padding 2
+
+' ========== External / framework (simplified) ==========
+' ==========================================
+'              ANDROID CLIENT
+' ==========================================
+package "Android App" <<Rectangle>> {
+
+  package "api" <<Rectangle>> {
+    interface ApiService <<interface>> {
+      + login(LoginRequest): Call<LoginResponse>
+      + register(RegisterRequest): Call<RegisterResponse>
+      + getEvents(...): Call<List<AppEvent>>
+      + getEventById(id: String): Call<AppEvent>
+      + createEvent(AddEventRequest): Call<AppEvent>
+      + updateEvent(...): Call<AppEvent>
+      + deleteEvent(id: String): Call<Void>
+      + reserveEvent(ReservationRequest): Call<Void>
+      + getReservations(): Call<List<AppReservation>>
+      + cancelReservation(id: String): Call<Void>
+      + logout(): Call<Void>
+    }
+
+    class RetrofitClient {
+      {static} - BASE_URL: String
+      {static} - retrofit: Retrofit
+      --
+      {static} + getClient(): Retrofit
+    }
+
+    class SessionCookieJar {
+    }
+  }
+
+  package "model (DTOs)" as androidmodel <<Rectangle>> {
+    together {
+      class AppEvent <<DTO>> {
+        - eventId: String
+        - organizerId: String
+        - title: String
+        - category: String
+        - eventDate: String
+        - location: String
+        - totalSpots: Integer
+        - availableSpots: Integer
+        - status: String
+        --
+        + getters
+      }
+
+      class AppReservation <<DTO>> {
+        - reservationId: String
+        - userId: String
+        - eventId: String
+        - reservationDate: String
+        - status: String
+        --
+        + getters
+      }
+    }
+
+    together {
+      class LoginRequest {
+        - identifier: String
+        - password: String
+        --
+        + getters / setters
+      }
+
+      class LoginResponse {
+        - message: String
+        - userId: String
+        - role: String
+        - error: String
+        --
+        + getters
+      }
+    }
+
+    together {
+      class RegisterRequest {
+        - name: String
+        - email: String
+        - phone: String
+        - password: String
+        - role: String
+      }
+
+      class RegisterResponse {
+        - userId: String
+        - name: String
+        - email: String
+        - phone: String
+        - role: String
+        - error: String
+        --
+        + getters
+      }
+    }
+
+    together {
+      class AddEventRequest {
+        - title: String
+        - category: String
+        - eventDate: String
+        - location: String
+        - totalSpots: Integer
+        - availableSpots: Integer
+        - status: String
+      }
+
+      class ReservationRequest {
+        - eventId: String
+      }
+    }
+  }
+
+  package "utils" <<Rectangle>> {
+    class SessionManager {
+      - prefs: SharedPreferences
+      --
+      + saveSession(userId, role): void
+      + getUserId(): String
+      + getRole(): String
+      + clearSession(): void
+    }
+
+    class DateTimeUtils {
+      {static} + formatDateTime(rawDateTime: String): String
+    }
+  }
+
+  package "adapter" <<Rectangle>> {
+    class EventAdapter {
+      - eventList: List<AppEvent>
+      - listener: OnEventClickListener
+    }
+    class ManagedEventAdapter
+    class ReservationAdapter
+  }
+
+  package "activities" <<Rectangle>> {
+    class BaseActivity {
+      + onCreateOptionsMenu(...): boolean
+      + onOptionsItemSelected(...): boolean
+      # logoutUser(): void
+    }
+
+    ' Folding activities vertically into a tight block
+    together {
+      class LoginActivity
+      class RegisterActivity
+      class HomeActivity
+      class AdminHomeActivity
+    }
+    together {
+      class EventListActivity
+      class EventDetailsActivity
+      class MyReservationsActivity
+      class ManagedEventsActivity
+      class AddEditEventActivity
+    }
+  }
+}
+
+RetrofitClient "1" .down.> "1" ApiService : creates
+RetrofitClient "1" -down-> "1" SessionCookieJar
+
+ApiService "1" ..> "1" LoginRequest
+ApiService "1" ..> "1" LoginResponse
+ApiService "1" ..> "1" RegisterRequest
+ApiService "1" ..> "1" RegisterResponse
+ApiService "1" ..> "*" AppEvent
+ApiService "1" ..> "*" AppReservation
+ApiService "1" ..> "1" AddEventRequest
+ApiService "1" ..> "1" ReservationRequest
+
+' Forces activities to stack down rather than spread across
+BaseActivity <|-down- LoginActivity
+BaseActivity <|-down- RegisterActivity
+BaseActivity <|-down- HomeActivity
+BaseActivity <|-down- AdminHomeActivity
+BaseActivity <|-down- EventListActivity
+BaseActivity <|-down- EventDetailsActivity
+BaseActivity <|-down- MyReservationsActivity
+BaseActivity <|-down- ManagedEventsActivity
+BaseActivity <|-down- AddEditEventActivity
+
+BaseActivity "1" ..> "1" ApiService
+BaseActivity "1" ..> "1" RetrofitClient
+BaseActivity "1" ..> "1" SessionManager
+
+EventAdapter "1" ..> "0..*" AppEvent
+ManagedEventAdapter "1" ..> "0..*" AppEvent
+ReservationAdapter "1" ..> "0..*" AppReservation
+EventAdapter "1" ..> "1" DateTimeUtils
+ManagedEventAdapter "1" ..> "1" DateTimeUtils
+ReservationAdapter "1" ..> "1" DateTimeUtils
+
+' ==========================================
+'                 BACKEND
+' ==========================================
+package "Backend" <<Rectangle>> {
+
+  package "config" <<Rectangle>> {
+    class FirebaseConfig {
+      - databaseUrl: String
+      - serviceAccountFile: String
+      --
+      + firebaseApp(): FirebaseApp
+      + firebaseDatabaseRef(...): Object
+    }
+
+    class CorsConfig {
+      + corsConfigurer(): WebMvcConfigurer
+    }
+  }
+
+  package "controller" <<Rectangle>> {
+    class AuthController {
+      {static} + SESSION_USER_ID: String
+      {static} + SESSION_USER_ROLE: String
+      - userService: UserService
+      --
+      + login(...): ResponseEntity
+      + getSession(...): ResponseEntity
+      + logout(...): ResponseEntity
+    }
+
+    class "AuthController.LoginRequest" as AuthLoginRequest <<nested>> {
+      - identifier: String
+      - password: String
+      --
+      + getters / setters
+    }
+
+    class UserController {
+      - userService: UserService
+      --
+      + createUser(user: User): ResponseEntity
+    }
+
+    class EventController {
+      - eventService: EventService
+      --
+      + getAllEvents(...): ResponseEntity
+      + getEventById(id: String): ResponseEntity
+      + createEvent(...): ResponseEntity
+      + updateEvent(...): ResponseEntity
+      + deleteEvent(...): ResponseEntity
+    }
+
+    class ReservationController {
+      - reservationService: ReservationService
+      - eventService: EventService
+      --
+      + getReservations(...): ResponseEntity
+      + getReservationsForEvent(...): ResponseEntity
+      + getReservationById(...): ResponseEntity
+      + createReservation(...): ResponseEntity
+      + deleteReservation(...): ResponseEntity
+    }
+  }
+
+  package "service" <<Rectangle>> {
+    class UserService {
+      - userRepository: UserRepository
+      --
+      + createUser(user: User): User
+      + findByEmailAndPassword(...): Optional<User>
+      + findByPhoneAndPassword(...): Optional<User>
+    }
+
+    class EventService {
+      - eventRepository: EventRepository
+      --
+      + getAllEvents(): List<Event>
+      + getEventById(id: String): Optional<Event>
+      + createEvent(event: Event): Event
+      + updateEvent(id: String, e: Event): Event
+      + deleteEvent(id: String): void
+      + searchEvents(category, location, date): List<Event>
+    }
+
+    class ReservationService {
+      - reservationRepository: ReservationRepository
+      - eventRepository: EventRepository
+      - userRepository: UserRepository
+      - emailService: EmailService
+      --
+      + getAllReservations(): List<Reservation>
+      + getReservationsByUserId(...): List<Reservation>
+      + getReservationsByEventId(...): List<Reservation>
+      + getReservationByEventAndUser(...): Optional<Reservation>
+      + getReservationById(...): Optional<Reservation>
+      + createReservation(r: Reservation): Reservation
+      + deleteReservation(id: String): void
+    }
+
+    class EmailService {
+      - fromAddress: String
+      --
+      + sendReservationConfirmation(...): void
+      + sendReservationCancellation(...): void
+    }
+  }
+
+  package "repository" <<Rectangle>> {
+    class UserRepository {
+      --
+      + save(user: User): User
+      + findById(id: String): Optional<User>
+      + findByEmail(email: String): Optional<User>
+      + findByPhone(phone: String): Optional<User>
+      + findByName(name: String): Optional<User>
+      + findAll(): List<User>
+      + deleteById(id: String): void
+    }
+
+    class EventRepository {
+      --
+      + save(event: Event): Event
+      + findById(id: String): Optional<Event>
+      + findAll(): List<Event>
+      + deleteById(id: String): void
+      + findByCategoryIgnoreCase(...): List<Event>
+      + findByLocationContainingIgnoreCase(...): List<Event>
+      + findByEventDateBetween(...): List<Event>
+    }
+
+    class ReservationRepository {
+      --
+      + save(r: Reservation): Reservation
+      + findById(id: String): Optional<Reservation>
+      + findAll(): List<Reservation>
+      + deleteById(id: String): void
+      + findByUserId(userId: String): List<Reservation>
+      + findByEventId(eventId: String): List<Reservation>
+      + findByEventIdAndUserId(...): Optional<Reservation>
+      + existsByUserIdAndEventIdAndStatus(...): boolean
+    }
+  }
+
+  package "model" <<Rectangle>> {
+    class User {
+      - userId: String
+      - name: String
+      - email: String
+      - phone: String
+      - password: String
+      - role: Role
+      - createdAt: LocalDateTime
+      - lastUpdate: LocalDateTime
+      --
+      + getters / setters
+    }
+
+    enum Role <<enumeration>> {
+      CUSTOMER
+      ORGANIZER
+    }
+
+    class Event {
+      - eventId: String
+      - organizerId: String
+      - title: String
+      - category: String
+      - eventDate: LocalDateTime
+      - location: String
+      - totalSpots: Integer
+      - availableSpots: Integer
+      - status: EventStatus
+      --
+      + getters / setters
+    }
+
+    enum "Event.Status" as EventStatus <<enumeration>> {
+      ACTIVE
+      INACTIVE
+    }
+
+    class Reservation {
+      - reservationId: String
+      - userId: String
+      - eventId: String
+      - reservationDate: LocalDateTime
+      - status: ReservationStatus
+      --
+      + getters / setters
+    }
+
+    enum "Reservation.Status" as ReservationStatus <<enumeration>> {
+      CONFIRMED
+      CANCELLED
+    }
+  }
+
+}
+
+' Backend domain relationships
+User "1" -down-> "1" Role : role
+Event "1" -down-> "1" EventStatus : status
+Reservation "1" -down-> "1" ReservationStatus : status
+
+User "1" -- "0..*" Event : creates\n[organizerId]
+User "1" -- "0..*" Reservation : reserves\n[userId]
+Event "1" -- "0..*" Reservation : booked in\n[eventId]
+
+' Backend persistence
+UserRepository "1" .down.> "*" User : loads/saves
+EventRepository "1" .down.> "*" Event : loads/saves
+ReservationRepository "1" .down.> "*" Reservation : loads/saves
+
+' Backend application services
+UserService "1" -down-> "1" UserRepository
+EventService "1" -down-> "1" EventRepository
+ReservationService "1" -down-> "1" ReservationRepository
+ReservationService "1" -down-> "1" EventRepository
+ReservationService "1" -down-> "1" UserRepository
+ReservationService "1" .down.> "1" EmailService
+
+UserService "1" ..> "*" User
+EventService "1" ..> "*" Event
+ReservationService "1" ..> "*" Reservation
+ReservationService "1" ..> "*" Event
+ReservationService "1" ..> "*" User
+
+' Backend REST controllers
+AuthController +-- AuthLoginRequest
+AuthController "1" -down-> "1" UserService
+UserController "1" -down-> "1" UserService
+EventController "1" -down-> "1" EventService
+ReservationController "1" -down-> "1" ReservationService
+ReservationController "1" -down-> "1" EventService
+
+AuthController "1" ..> "*" User
+UserController "1" ..> "*" User
+EventController "1" ..> "*" Event
+ReservationController "1" ..> "*" Reservation
+ReservationController "1" ..> "*" Event
+
+' ==========================================
+'        CROSS-TIER MAPPINGS (JSON)
+' ==========================================
+' Using `.right.` forces Android to layout on the left side of Backend, forming a clean square
+AppEvent "1" .right.> "1" Event : maps JSON
+AppReservation "1" .right.> "1" Reservation : maps JSON
+
+@enduml

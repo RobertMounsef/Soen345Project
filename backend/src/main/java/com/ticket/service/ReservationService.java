@@ -21,18 +21,15 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final EventRepository eventRepository;
     private final EmailService emailService;
-    private final SmsService smsService;
     private final UserRepository userRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
                               EventRepository eventRepository,
                               EmailService emailService,
-                              SmsService smsService,
                               UserRepository userRepository) {
         this.reservationRepository = reservationRepository;
         this.eventRepository = eventRepository;
         this.emailService = emailService;
-        this.smsService = smsService;
         this.userRepository = userRepository;
     }
 
@@ -97,13 +94,6 @@ public class ReservationService {
                 System.out.println("Email failed, but reservation was created: " + e.getMessage());
             }
         }
-        if (user.getPhone() != null && !user.getPhone().isBlank()) {
-            try {
-                smsService.sendReservationConfirmation(
-                        user.getPhone(), user.getName(), event.getTitle());
-            } catch (Exception e) {
-                System.out.println("SMS failed, but reservation was created: " + e.getMessage());
-            }
         }
 
         return saved;
@@ -132,13 +122,6 @@ public class ReservationService {
                 log.warn("Cancellation email failed for reservation {}: {}", id, e.toString());
             }
         }
-        String phone = user.getPhone();
-        if (phone != null && !phone.isBlank()) {
-            try {
-                smsService.sendReservationCancellation(phone, userName, eventTitle);
-            } catch (Exception e) {
-                log.warn("Cancellation SMS failed for reservation {}: {}", id, e.toString());
-            }
         }
 
         reservationRepository.deleteById(id);

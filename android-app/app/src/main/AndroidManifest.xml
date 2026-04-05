@@ -12,14 +12,14 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.TicketReservationApp">
-        <activity android:name=".activities.RegisterActivity" />
-        <activity android:name=".activities.HomeActivity" />
-        <activity android:name=".activities.EventListActivity" />
-        <activity android:name=".activities.MyReservationsActivity" />
-        <activity android:name=".activities.EventDetailsActivity" />
-        <activity android:name=".activities.AdminHomeActivity" />
-        <activity android:name=".activities.ManagedEventsActivity" />
-        <activity android:name=".activities.AddEditEventActivity" />
+        <activity android:name=".activities.RegisterActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.HomeActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.EventListActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.MyReservationsActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.EventDetailsActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.AdminHomeActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.ManagedEventsActivity" android:windowSoftInputMode="adjustResize" />
+        <activity android:name=".activities.AddEditEventActivity" android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".activities.LoginActivity"
 

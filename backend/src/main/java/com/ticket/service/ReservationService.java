@@ -78,10 +78,16 @@ public class ReservationService {
         event.setAvailableSpots(event.getAvailableSpots() - 1);
         eventRepository.save(event);
 
-        Reservation saved = reservationRepository.save(reservation);
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Enrich reservation with legible info for the UI
+        reservation.setUserName(user.getName());
+        reservation.setEventTitle(event.getTitle());
+        reservation.setEventDate(event.getEventDate() != null ? event.getEventDate().toString() : null);
+        reservation.setEventLocation(event.getLocation());
+
+        Reservation saved = reservationRepository.save(reservation);
 
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
             try {

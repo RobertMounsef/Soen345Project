@@ -45,6 +45,22 @@ jobs:
         run: chmod +x gradlew
         working-directory: android-app
 
-      - name: Run Android unit tests
+      - name: Enable KVM permissions
+        run: |
+          sudo gpasswd -a $USER kvm
+          sudo chmod 666 /dev/kvm
+
+      - name: Run Android local unit tests
         run: ./gradlew testDebugUnitTest
         working-directory: android-app
+
+      - name: Run Android instrumented UI tests (Espresso)
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 29
+          target: default
+          arch: x86_64
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
+          script: ./gradlew connectedDebugAndroidTest
+          working-directory: android-app

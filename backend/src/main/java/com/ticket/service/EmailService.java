@@ -3,6 +3,7 @@ package com.ticket.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,6 +18,7 @@ public class EmailService {
         this.fromAddress = fromAddress;
     }
 
+    @Async
     public void sendReservationConfirmation(String toEmail, String userName, String eventTitle) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);
@@ -30,6 +32,7 @@ public class EmailService {
         mailSender.send(message);
     }
 
+    @Async
     public void sendReservationCancellation(String toEmail, String userName, String eventTitle) {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(fromAddress);

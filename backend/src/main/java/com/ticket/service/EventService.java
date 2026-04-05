@@ -13,8 +13,11 @@ public class EventService {
 
     private final EventRepository eventRepository;
 
-    public EventService(EventRepository eventRepository) {
+    private final com.ticket.repository.ReservationRepository reservationRepository;
+
+    public EventService(EventRepository eventRepository, com.ticket.repository.ReservationRepository reservationRepository) {
         this.eventRepository = eventRepository;
+        this.reservationRepository = reservationRepository;
     }
 
     public List<Event> getAllEvents() {
@@ -43,6 +46,13 @@ public class EventService {
     }
 
     public void deleteEvent(String id) {
+        // Mark all reservations for this event as removed by organizer
+        List<com.ticket.model.Reservation> reservations = reservationRepository.findByEventId(id);
+        for (com.ticket.model.Reservation res : reservations) {
+            res.setStatus(com.ticket.model.Reservation.Status.REMOVED_BY_ORGANIZER);
+            reservationRepository.save(res);
+        }
+
         eventRepository.deleteById(id);
     }
 

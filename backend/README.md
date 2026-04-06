@@ -110,7 +110,13 @@ If a secret was ever committed, rotate it (new Gmail app password, new Firebase 
 ./mvnw test
 ```
 
-CI runs the same on pushes/PRs to `main` (see `.github/workflows/ci.yml` in the repo root).
+Default test runs **exclude** tag **`firebase-integration`** (real Firebase Realtime Database). With **`firebase-service-account.json`** in `src/main/resources`, run repository integration tests against an isolated subtree:
+
+```bash
+./mvnw test -Pfirebase-it
+```
+
+CI runs `./mvnw test` only (see `.github/workflows/ci.yml` in the repo root), so Firebase ITs stay opt-in locally.
 
 ---
 

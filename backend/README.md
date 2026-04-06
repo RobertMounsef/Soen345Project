@@ -110,6 +110,8 @@ If a secret was ever committed, rotate it (new Gmail app password, new Firebase 
 ./mvnw test
 ```
 
+**System / API end-to-end tests** (`com.ticket.system.TicketApiSystemIT`) boot the full application on a random port, call the REST API over HTTP with real session cookies, and read/write **Firebase** like production. They run only when `src/main/resources/firebase-service-account.json` is present on the classpath; otherwise JUnit **skips** them (normal for CI clones without secrets).
+
 CI runs the same on pushes/PRs to `main` (see `.github/workflows/ci.yml` in the repo root).
 
 ---

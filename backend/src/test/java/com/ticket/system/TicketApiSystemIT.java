@@ -93,6 +93,11 @@ class TicketApiSystemIT {
         assertEquals(200, post(customerClient, "/api/users", userJson(custName, custEmail, null, password, "CUSTOMER")).statusCode());
 
         assertEquals(200, post(organizerClient, "/api/auth/login", loginJson(orgEmail, password)).statusCode());
+
+        HttpResponse<String> orgSession = get(organizerClient, "/api/auth/session");
+        assertEquals(200, orgSession.statusCode(), orgSession.body());
+        assertTrue(orgSession.body().contains("ORGANIZER"), orgSession.body());
+
         String eventTitle = "system_test_event_" + n;
         String eventJson = """
                 {
@@ -107,12 +112,38 @@ class TicketApiSystemIT {
         assertEquals(200, createEventRes.statusCode(), createEventRes.body());
         String eventId = requireJsonStringField(createEventRes.body(), "eventId");
 
+        HttpResponse<String> publicEventById = get(newHttpClient(), "/api/events/" + eventId);
+        assertEquals(200, publicEventById.statusCode(), publicEventById.body());
+        assertTrue(publicEventById.body().contains(eventTitle), publicEventById.body());
+
+        HttpResponse<String> filteredEvents = get(newHttpClient(), "/api/events?category=SystemTest");
+        assertEquals(200, filteredEvents.statusCode(), filteredEvents.body());
+        assertTrue(filteredEvents.body().contains(eventTitle), filteredEvents.body());
+
         assertEquals(200, post(customerClient, "/api/auth/login", loginJson(custEmail, password)).statusCode());
+        HttpResponse<String> custSession = get(customerClient, "/api/auth/session");
+        assertEquals(200, custSession.statusCode(), custSession.body());
+        assertTrue(custSession.body().contains("CUSTOMER"), custSession.body());
+
+        assertEquals(403, post(customerClient, "/api/events", eventJson).statusCode());
 
         String reservationJson = "{\"eventId\":\"" + eventId + "\"}";
+        assertEquals(403, post(organizerClient, "/api/reservations", reservationJson).statusCode());
+
         HttpResponse<String> reserveRes = post(customerClient, "/api/reservations", reservationJson);
         assertEquals(200, reserveRes.statusCode(), reserveRes.body());
         String reservationId = requireJsonStringField(reserveRes.body(), "reservationId");
+
+        HttpResponse<String> dupReserve = post(customerClient, "/api/reservations", reservationJson);
+        assertEquals(409, dupReserve.statusCode(), dupReserve.body());
+
+        HttpResponse<String> orgEventReservations = get(organizerClient, "/api/reservations/event/" + eventId);
+        assertEquals(200, orgEventReservations.statusCode(), orgEventReservations.body());
+        assertTrue(orgEventReservations.body().contains(reservationId), orgEventReservations.body());
+
+        HttpResponse<String> custReservationById = get(customerClient, "/api/reservations/" + reservationId);
+        assertEquals(200, custReservationById.statusCode(), custReservationById.body());
+        assertTrue(custReservationById.body().contains(eventId), custReservationById.body());
 
         HttpResponse<String> listRes = get(customerClient, "/api/reservations");
         assertEquals(200, listRes.statusCode(), listRes.body());
@@ -121,9 +152,57 @@ class TicketApiSystemIT {
         HttpResponse<String> deleteRes = delete(customerClient, "/api/reservations/" + reservationId);
         assertEquals(204, deleteRes.statusCode(), deleteRes.body());
 
+        String updatedTitle = eventTitle + "_updated";
+        String updateEventJson = """
+                {
+                  "title": "%s",
+                  "category": "SystemTest",
+                  "eventDate": "2026-08-21T20:00:00",
+                  "location": "Updated Integration Hall",
+                  "totalSpots": 4,
+                  "availableSpots": 4,
+                  "status": "ACTIVE"
+                }""".formatted(updatedTitle);
+        HttpResponse<String> putRes = put(organizerClient, "/api/events/" + eventId, updateEventJson);
+        assertEquals(200, putRes.statusCode(), putRes.body());
+
+        HttpResponse<String> eventAfterPut = get(newHttpClient(), "/api/events/" + eventId);
+        assertEquals(200, eventAfterPut.statusCode(), eventAfterPut.body());
+        assertTrue(eventAfterPut.body().contains(updatedTitle), eventAfterPut.body());
+
         HttpResponse<String> publicEvents = get(newHttpClient(), "/api/events");
         assertEquals(200, publicEvents.statusCode(), publicEvents.body());
-        assertTrue(publicEvents.body().contains(eventTitle));
+        assertTrue(publicEvents.body().contains(updatedTitle), publicEvents.body());
+
+        assertEquals(204, delete(organizerClient, "/api/events/" + eventId).statusCode());
+        assertEquals(404, get(newHttpClient(), "/api/events/" + eventId).statusCode());
+    }
+
+    @Test
+    void logout_invalidatesSession() throws Exception {
+        int n = ThreadLocalRandom.current().nextInt(1, 100_001);
+        String password = "SysTestPass1!";
+        String name = "system_test_logout_" + n;
+        String email = name + "@test.com";
+        HttpClient client = newHttpClient();
+        assertEquals(200, post(client, "/api/users", userJson(name, email, null, password, "CUSTOMER")).statusCode());
+        assertEquals(200, post(client, "/api/auth/login", loginJson(email, password)).statusCode());
+        assertEquals(200, get(client, "/api/auth/session").statusCode());
+        assertEquals(200, postEmpty(client, "/api/auth/logout").statusCode());
+        assertEquals(401, get(client, "/api/auth/session").statusCode());
+    }
+
+    @Test
+    void register_duplicateEmail_returns409() throws Exception {
+        int n = ThreadLocalRandom.current().nextInt(1, 100_001);
+        String password = "SysTestPass1!";
+        String name = "system_test_dup_" + n;
+        String email = name + "@test.com";
+        HttpClient client = newHttpClient();
+        assertEquals(200, post(client, "/api/users", userJson(name, email, null, password, "CUSTOMER")).statusCode());
+        String otherName = "system_test_dup_other_" + n;
+        HttpResponse<String> second = post(client, "/api/users", userJson(otherName, email, null, password, "CUSTOMER"));
+        assertEquals(409, second.statusCode(), second.body());
     }
 
     static String requireJsonStringField(String json, String fieldName) {
@@ -174,11 +253,30 @@ class TicketApiSystemIT {
         return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
+    private HttpResponse<String> put(HttpClient client, String path, String json) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + path))
+                .timeout(TIMEOUT)
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(json))
+                .build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
     private HttpResponse<String> delete(HttpClient client, String path) throws Exception {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(baseUrl + path))
                 .timeout(TIMEOUT)
                 .DELETE()
+                .build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> postEmpty(HttpClient client, String path) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(baseUrl + path))
+                .timeout(TIMEOUT)
+                .POST(HttpRequest.BodyPublishers.noBody())
                 .build();
         return client.send(request, HttpResponse.BodyHandlers.ofString());
     }

@@ -8,6 +8,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -20,6 +21,13 @@ public class FirebaseConfig {
 
     @Value("${firebase.service.account}")
     private String serviceAccountFile;
+
+    /**
+     * Optional child path under the RTDB root (e.g. {@code integration_test_abc123}) so automated
+     * tests do not touch production {@code users}/{@code events}/{@code reservations} trees.
+     */
+    @Value("${firebase.database.path-prefix:}")
+    private String pathPrefix;
 
     @Bean
     public FirebaseApp firebaseApp() throws IOException {
@@ -49,6 +57,10 @@ public class FirebaseConfig {
 
     @Bean
     public DatabaseReference firebaseDatabaseRef(FirebaseApp firebaseApp) {
-        return FirebaseDatabase.getInstance(firebaseApp).getReference();
+        DatabaseReference ref = FirebaseDatabase.getInstance(firebaseApp).getReference();
+        if (StringUtils.hasText(pathPrefix)) {
+            ref = ref.child(pathPrefix.trim());
+        }
+        return ref;
     }
 }

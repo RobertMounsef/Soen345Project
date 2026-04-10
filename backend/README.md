@@ -110,6 +110,13 @@ If a secret was ever committed, rotate it (new Gmail app password, new Firebase 
 ./mvnw test
 ```
 
+Default test runs **exclude** tag **`firebase-integration`** (real Firebase Realtime Database). With **`firebase-service-account.json`** in `src/main/resources`, run repository integration tests against an isolated subtree:
+
+```bash
+./mvnw test -Pfirebase-it
+```
+
+CI runs `./mvnw test` only (see `.github/workflows/ci.yml` in the repo root), so Firebase ITs stay opt-in locally.
 **System / API end-to-end tests** (`com.ticket.system.TicketApiSystemIT`) boot the full application on a random port, call the REST API over HTTP with real session cookies, and read/write **Firebase** like production. They run only when `src/main/resources/firebase-service-account.json` is present on the classpath; otherwise JUnit **skips** them (normal for CI clones without secrets).
 
 CI runs the same on pushes/PRs to `main` (see `.github/workflows/ci.yml` in the repo root).

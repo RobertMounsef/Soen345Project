@@ -23,12 +23,12 @@ public class DateTimeUtils {
 
         for (String pattern : INPUT_PATTERNS) {
             try {
-                SimpleDateFormat inputFormat = new SimpleDateFormat(pattern, Locale.getDefault());
+                SimpleDateFormat inputFormat = new SimpleDateFormat(pattern, Locale.US);
                 inputFormat.setLenient(false);
 
                 Date date = inputFormat.parse(rawDateTime);
                 if (date != null) {
-                    SimpleDateFormat outputFormat = new SimpleDateFormat(OUTPUT_PATTERN, Locale.getDefault());
+                    SimpleDateFormat outputFormat = new SimpleDateFormat(OUTPUT_PATTERN, Locale.US);
                     return outputFormat.format(date);
                 }
             } catch (ParseException ignored) {

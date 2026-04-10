@@ -8,16 +8,21 @@ public class Reservation {
 
     /** Firebase push key of the User who made the reservation */
     private String userId;
+    private String userName;
 
     /** Firebase push key of the Event being reserved */
     private String eventId;
+    private String eventTitle;
+    private String eventDate;
+    private String eventLocation;
 
     private LocalDateTime reservationDate = LocalDateTime.now();
     private Status status = Status.CONFIRMED;
 
     public enum Status {
         CONFIRMED,
-        CANCELLED
+        CANCELLED,
+        REMOVED_BY_ORGANIZER
     }
 
     // Getters and Setters
@@ -61,4 +66,13 @@ public class Reservation {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    public String getUserName() { return userName; }
+    public void setUserName(String userName) { this.userName = userName; }
+    public String getEventTitle() { return eventTitle; }
+    public void setEventTitle(String eventTitle) { this.eventTitle = eventTitle; }
+    public String getEventDate() { return eventDate; }
+    public void setEventDate(String eventDate) { this.eventDate = eventDate; }
+    public String getEventLocation() { return eventLocation; }
+    public void setEventLocation(String eventLocation) { this.eventLocation = eventLocation; }
 }

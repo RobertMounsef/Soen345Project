@@ -8,7 +8,6 @@ import com.ticket.repository.ReservationRepository;
 import com.ticket.repository.UserRepository;
 import com.ticket.service.EmailService;
 import com.ticket.service.ReservationService;
-import com.ticket.service.SmsService;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -37,8 +36,6 @@ class ReservationServiceTest {
     private EventRepository eventRepository;
     @Mock
     private EmailService emailService;
-    @Mock
-    private SmsService smsService;
     @Mock
     private UserRepository userRepository;
 
@@ -243,6 +240,7 @@ class ReservationServiceTest {
             when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
             when(reservationRepository.save(toSave)).thenReturn(saved);
             when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
 
             reservationService.createReservation(toSave);
 
@@ -260,23 +258,6 @@ class ReservationServiceTest {
                     .hasMessageContaining("Event not found");
         }
 
-        @Test
-        @DisplayName("skips email but sends SMS when email is blank and phone is set")
-        void smsWhenEmailBlank() {
-            alice.setEmail("");
-            alice.setPhone("5145550100");
-            Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
-            Reservation saved  = makeReservation("-res001", ALICE_ID, JAZZ_ID);
-
-            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
-            when(reservationRepository.save(toSave)).thenReturn(saved);
-            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
-
-            reservationService.createReservation(toSave);
-
-            verify(emailService, never()).sendReservationConfirmation(any(), any(), any());
-            verify(smsService).sendReservationConfirmation("5145550100", "Alice", "Jazz Night");
-        }
 
         @Test
         @DisplayName("skips email and SMS when both contact fields are blank (edge case)")
@@ -293,7 +274,6 @@ class ReservationServiceTest {
             reservationService.createReservation(toSave);
 
             verify(emailService, never()).sendReservationConfirmation(any(), any(), any());
-            verify(smsService, never()).sendReservationConfirmation(any(), any(), any());
         }
 
         @Test
@@ -303,6 +283,7 @@ class ReservationServiceTest {
             Reservation toSave = makeReservation(null, ALICE_ID, JAZZ_ID);
 
             when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
+            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
             when(reservationRepository.save(toSave)).thenThrow(new RuntimeException("DB error"));
 
             assertThatThrownBy(() -> reservationService.createReservation(toSave))
@@ -360,22 +341,6 @@ class ReservationServiceTest {
                     .hasMessageContaining("Reservation not found");
         }
 
-        @Test
-        @DisplayName("skips email but sends SMS cancellation when email is blank and phone is set")
-        void smsCancellationWhenEmailBlank() {
-            alice.setEmail(null);
-            alice.setPhone("5145550100");
-            Reservation r = makeReservation("-res001", ALICE_ID, JAZZ_ID);
-
-            when(reservationRepository.findById("-res001")).thenReturn(Optional.of(r));
-            when(eventRepository.findById(JAZZ_ID)).thenReturn(Optional.of(jazzNight));
-            when(userRepository.findById(ALICE_ID)).thenReturn(Optional.of(alice));
-
-            reservationService.deleteReservation("-res001");
-
-            verify(emailService, never()).sendReservationCancellation(any(), any(), any());
-            verify(smsService).sendReservationCancellation("5145550100", "Alice", "Jazz Night");
-        }
 
         @Test
         @DisplayName("skips email and SMS when both contact fields are blank (edge case)")
@@ -391,7 +356,6 @@ class ReservationServiceTest {
             reservationService.deleteReservation("-res001");
 
             verify(emailService, never()).sendReservationCancellation(any(), any(), any());
-            verify(smsService, never()).sendReservationCancellation(any(), any(), any());
         }
 
         @Test

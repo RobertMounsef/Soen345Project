@@ -21,18 +21,15 @@ public class ReservationService {
     private final ReservationRepository reservationRepository;
     private final EventRepository eventRepository;
     private final EmailService emailService;
-    private final SmsService smsService;
     private final UserRepository userRepository;
 
     public ReservationService(ReservationRepository reservationRepository,
                               EventRepository eventRepository,
                               EmailService emailService,
-                              SmsService smsService,
                               UserRepository userRepository) {
         this.reservationRepository = reservationRepository;
         this.eventRepository = eventRepository;
         this.emailService = emailService;
-        this.smsService = smsService;
         this.userRepository = userRepository;
     }
 
@@ -81,10 +78,16 @@ public class ReservationService {
         event.setAvailableSpots(event.getAvailableSpots() - 1);
         eventRepository.save(event);
 
-        Reservation saved = reservationRepository.save(reservation);
-
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        // Enrich reservation with legible info for the UI
+        reservation.setUserName(user.getName());
+        reservation.setEventTitle(event.getTitle());
+        reservation.setEventDate(event.getEventDate() != null ? event.getEventDate().toString() : null);
+        reservation.setEventLocation(event.getLocation());
+
+        Reservation saved = reservationRepository.save(reservation);
 
         if (user.getEmail() != null && !user.getEmail().isBlank()) {
             try {
@@ -95,14 +98,6 @@ public class ReservationService {
                 );
             } catch (Exception e) {
                 System.out.println("Email failed, but reservation was created: " + e.getMessage());
-            }
-        }
-        if (user.getPhone() != null && !user.getPhone().isBlank()) {
-            try {
-                smsService.sendReservationConfirmation(
-                        user.getPhone(), user.getName(), event.getTitle());
-            } catch (Exception e) {
-                System.out.println("SMS failed, but reservation was created: " + e.getMessage());
             }
         }
 
@@ -130,14 +125,6 @@ public class ReservationService {
                 emailService.sendReservationCancellation(email, userName, eventTitle);
             } catch (Exception e) {
                 log.warn("Cancellation email failed for reservation {}: {}", id, e.toString());
-            }
-        }
-        String phone = user.getPhone();
-        if (phone != null && !phone.isBlank()) {
-            try {
-                smsService.sendReservationCancellation(phone, userName, eventTitle);
-            } catch (Exception e) {
-                log.warn("Cancellation SMS failed for reservation {}: {}", id, e.toString());
             }
         }
 

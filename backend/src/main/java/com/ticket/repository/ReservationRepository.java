@@ -134,7 +134,11 @@ public class ReservationRepository {
         Map<String, Object> m = new HashMap<>();
         m.put("reservationId", r.getReservationId());
         m.put("userId", r.getUserId());
+        m.put("userName", r.getUserName());
         m.put("eventId", r.getEventId());
+        m.put("eventTitle", r.getEventTitle());
+        m.put("eventDate", r.getEventDate());
+        m.put("eventLocation", r.getEventLocation());
         m.put("reservationDate", r.getReservationDate() != null ? r.getReservationDate().toString() : null);
         m.put("status", r.getStatus() != null ? r.getStatus().name() : null);
         return m;
@@ -144,7 +148,11 @@ public class ReservationRepository {
         Reservation r = new Reservation();
         r.setReservationId(getString(s, "reservationId"));
         r.setUserId(getString(s, "userId"));
+        r.setUserName(getString(s, "userName"));
         r.setEventId(getString(s, "eventId"));
+        r.setEventTitle(getString(s, "eventTitle"));
+        r.setEventDate(getString(s, "eventDate"));
+        r.setEventLocation(getString(s, "eventLocation"));
         String date = getString(s, "reservationDate");
         if (date != null) r.setReservationDate(LocalDateTime.parse(date));
         String status = getString(s, "status");

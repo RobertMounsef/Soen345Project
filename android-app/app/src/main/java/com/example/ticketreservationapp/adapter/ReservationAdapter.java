@@ -41,16 +41,29 @@ public class ReservationAdapter extends RecyclerView.Adapter<ReservationAdapter.
     public void onBindViewHolder(@NonNull ReservationViewHolder holder, int position) {
         Reservation reservation = reservationList.get(position);
 
-        // Reservation is now flat — show eventId since the nested Event is no longer returned
-        String eventLabel = reservation.getEventId() != null
-                ? "Event ID: " + reservation.getEventId()
-                : "N/A";
+        // Show legible event info instead of raw IDs
+        String title = reservation.getEventTitle() != null ? reservation.getEventTitle() : "Event ID: " + reservation.getEventId();
+        String eventDate = reservation.getEventDate() != null ? DateTimeUtils.formatDateTime(reservation.getEventDate()) : "";
+        String location = reservation.getEventLocation() != null ? reservation.getEventLocation() : "";
 
-        holder.tvReservationTitle.setText(eventLabel);
-        holder.tvReservationEventDate.setText("");
+        holder.tvReservationTitle.setText(title);
+        holder.tvReservationEventDate.setText("Event Date: " + eventDate);
         holder.tvReservationDate.setText("Reserved on: " + DateTimeUtils.formatDateTime(reservation.getReservationDate()));
-        holder.tvReservationStatus.setText("Status: " + safeText(reservation.getStatus()));
-        holder.tvReservationLocation.setText("");
+        String status = safeText(reservation.getStatus());
+        holder.tvReservationStatus.setText("Status: " + status);
+        holder.tvReservationLocation.setText("Location: " + location);
+
+        if ("REMOVED_BY_ORGANIZER".equalsIgnoreCase(status)) {
+            holder.tvReservationStatus.setTextColor(android.graphics.Color.RED);
+            holder.tvReservationStatus.setText("Status: REMOVED BY ORGANIZER");
+            holder.btnCancelReservation.setVisibility(View.GONE);
+        } else if ("CANCELLED".equalsIgnoreCase(status)) {
+            holder.tvReservationStatus.setTextColor(android.graphics.Color.GRAY);
+            holder.btnCancelReservation.setVisibility(View.GONE);
+        } else {
+            holder.tvReservationStatus.setTextColor(android.graphics.Color.BLACK);
+            holder.btnCancelReservation.setVisibility(View.VISIBLE);
+        }
 
         holder.btnCancelReservation.setOnClickListener(v -> listener.onCancelClick(reservation));
     }

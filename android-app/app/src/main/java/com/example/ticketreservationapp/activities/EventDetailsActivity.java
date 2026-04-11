@@ -111,7 +111,8 @@ public class EventDetailsActivity extends BaseActivity {
                         tvReserveMessage.setText("Organizers cannot reserve events.");
                     } else if (isAlreadyReserved) {
                         btnReserve.setVisibility(android.view.View.GONE);
-                        tvReserveMessage.setText("Reserved! Confirmation email sent.");
+                        tvReserveMessage.setText(
+                                "Reserved! Confirmation sent by email and/or SMS (based on your account).");
                     } else {
                         boolean canReserve =
                                 event.getAvailableSpots() != null &&
@@ -159,7 +160,7 @@ public class EventDetailsActivity extends BaseActivity {
                 if (response.isSuccessful()) {
                     isAlreadyReserved = true;
                     Toast.makeText(EventDetailsActivity.this,
-                            "Reservation successful! Check your email for confirmation.",
+                            "Reservation successful! Check your email or SMS for confirmation.",
                             Toast.LENGTH_LONG).show();
                     setResult(RESULT_OK);
                     loadEventDetails();

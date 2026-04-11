@@ -14,8 +14,13 @@ app.mail.from=you@gmail.com
 # app.mail.from=noreply@localhost
 
 # --- Twilio SMS (optional) ---
+# REST auth always uses Account SID (starts with AC) from Twilio Console → Account → API keys / Account Info.
+# If you use a Messaging Service (starts with MG), put it in twilio.messaging.service.sid — not in twilio.account.sid.
 # app.sms.enabled=true
-# twilio.account.sid=
+# twilio.account.sid=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 # twilio.auth.token=
+# Optional: send via Messaging Service (use this OR from-number below)
+# twilio.messaging.service.sid=MGxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+# Optional: send from this number if not using a Messaging Service
 # twilio.from.number=+1xxxxxxxxxx
 

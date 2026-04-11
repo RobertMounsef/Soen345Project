@@ -29,8 +29,8 @@ key.properties
 **/firebase-service-account.json
 **/google-services.json
 
-# Backend: local mail / Twilio overrides (template: application-local.properties.example)
-backend/src/main/resources/application-local.properties
+# Backend: local mail / Twilio / other overrides (template: application-local.properties.example)
+**/application-local.properties
 
 # Environment files
 .env

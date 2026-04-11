@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 @Service
 public class SmsService {
@@ -16,21 +17,51 @@ public class SmsService {
 
     private final boolean active;
     private final String fromNumber;
+    private final String messagingServiceSid;
 
     public SmsService(
             @Value("${app.sms.enabled:false}") boolean enabled,
             @Value("${twilio.account.sid:}") String accountSid,
             @Value("${twilio.auth.token:}") String authToken,
-            @Value("${twilio.from.number:}") String fromNumber) {
+            @Value("${twilio.from.number:}") String fromNumber,
+            @Value("${twilio.messaging.service.sid:}") String messagingServiceSid) {
         this.fromNumber = fromNumber != null ? fromNumber.trim() : "";
-        boolean creds = accountSid != null && !accountSid.isBlank()
-                && authToken != null && !authToken.isBlank()
-                && !this.fromNumber.isBlank();
-        this.active = enabled && creds;
+        this.messagingServiceSid = messagingServiceSid != null ? messagingServiceSid.trim() : "";
+
+        String sid = accountSid != null ? accountSid.trim() : "";
+        boolean tokenOk = authToken != null && !authToken.isBlank();
+        boolean hasMessagingService = StringUtils.hasText(this.messagingServiceSid);
+        boolean hasFrom = StringUtils.hasText(this.fromNumber);
+
+        // Twilio REST auth always uses Account SID (AC...), never Messaging Service (MG...).
+        boolean authSidOk = sid.startsWith("AC");
+        if (enabled && !sid.isEmpty() && sid.startsWith("MG")) {
+            log.error(
+                    "twilio.account.sid is set to a Messaging Service SID (MG...). "
+                            + "Put that value in twilio.messaging.service.sid instead, and set twilio.account.sid "
+                            + "to your Account SID from Twilio Console (starts with AC). SMS is disabled until fixed.");
+        }
+
+        boolean canSend = hasMessagingService || hasFrom;
+        this.active = enabled && authSidOk && tokenOk && canSend;
+
         if (this.active) {
-            Twilio.init(accountSid, authToken);
-        } else if (enabled && !creds) {
-            log.warn("SMS is enabled but Twilio credentials or from-number are missing; SMS will not be sent.");
+            Twilio.init(sid, authToken.trim());
+            log.info(
+                    "Twilio SMS enabled (sending via {}).",
+                    hasMessagingService ? "Messaging Service " + this.messagingServiceSid : "phone number " + this.fromNumber);
+        } else if (enabled) {
+            if (!authSidOk) {
+                log.warn(
+                        "SMS is enabled but twilio.account.sid must be your Twilio Account SID (starts with AC). "
+                                + "SMS will not be sent.");
+            } else if (!tokenOk) {
+                log.warn("SMS is enabled but twilio.auth.token is missing. SMS will not be sent.");
+            } else if (!canSend) {
+                log.warn(
+                        "SMS is enabled but neither twilio.messaging.service.sid nor twilio.from.number is set. "
+                                + "SMS will not be sent.");
+            }
         }
     }
 
@@ -63,7 +94,11 @@ public class SmsService {
 
     private void send(String toE164, String body) {
         try {
-            Message.creator(new PhoneNumber(toE164), new PhoneNumber(fromNumber), body).create();
+            if (StringUtils.hasText(messagingServiceSid)) {
+                Message.creator(new PhoneNumber(toE164), messagingServiceSid, body).create();
+            } else {
+                Message.creator(new PhoneNumber(toE164), new PhoneNumber(fromNumber), body).create();
+            }
         } catch (Exception e) {
             log.warn("Failed to send SMS to {}: {}", toE164, e.toString());
         }

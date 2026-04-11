@@ -1,6 +1,5 @@
 package com.example.ticketreservationapp.activities;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
@@ -8,13 +7,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.CheckBox;
 
-import androidx.appcompat.app.AppCompatActivity;
-
 import com.example.ticketreservationapp.R;
 import com.example.ticketreservationapp.api.ApiService;
 import com.example.ticketreservationapp.api.RetrofitClient;
 import com.example.ticketreservationapp.model.RegisterRequest;
 import com.example.ticketreservationapp.model.RegisterResponse;
+import com.example.ticketreservationapp.utils.PhoneFormatUtils;
 
 import java.util.Locale;
 
@@ -66,6 +64,15 @@ public class RegisterActivity extends BaseActivity {
         }
         if (!email.isEmpty()) {
             email = email.toLowerCase(Locale.ROOT);
+        }
+        if (!phone.isEmpty()) {
+            phone = PhoneFormatUtils.normalizeForApi(phone);
+            if (!PhoneFormatUtils.isValidE164(phone)) {
+                Toast.makeText(this,
+                        "Enter a valid phone number (e.g. 5145550199 or +15145550199)",
+                        Toast.LENGTH_LONG).show();
+                return;
+            }
         }
 
         btnRegister.setEnabled(false);

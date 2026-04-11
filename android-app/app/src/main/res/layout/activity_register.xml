@@ -36,7 +36,7 @@
             android:id="@+id/etPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Phone"
+            android:hint="Phone (e.g. 5145550199 or +15145550199)"
             android:inputType="phone"
             android:layout_marginBottom="12dp" />
 

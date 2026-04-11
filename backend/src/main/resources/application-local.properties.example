@@ -13,3 +13,9 @@ app.mail.from=you@gmail.com
 # spring.mail.password=
 # app.mail.from=noreply@localhost
 
+# --- Twilio SMS (optional) ---
+# app.sms.enabled=true
+# twilio.account.sid=
+# twilio.auth.token=
+# twilio.from.number=+1xxxxxxxxxx
+

@@ -11,9 +11,11 @@ import java.util.Optional;
 public class UserService {
 
     private final UserRepository userRepository;
+    private final PhoneNumberService phoneNumberService;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, PhoneNumberService phoneNumberService) {
         this.userRepository = userRepository;
+        this.phoneNumberService = phoneNumberService;
     }
 
     public User createUser(User user) {
@@ -31,17 +33,17 @@ public class UserService {
         if (userRepository.findByName(user.getName()).isPresent()) {
             throw new IllegalArgumentException("Username already taken");
         }
+        if (hasEmail) {
+            user.setEmail(user.getEmail().trim().toLowerCase(Locale.ROOT));
+        }
+        if (hasPhone) {
+            user.setPhone(phoneNumberService.normalizeToE164(user.getPhone()));
+        }
         if (hasEmail && userRepository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already registered");
         }
         if (hasPhone && userRepository.findByPhone(user.getPhone()).isPresent()) {
             throw new IllegalArgumentException("Phone number already registered");
-        }
-        if (hasEmail) {
-            user.setEmail(user.getEmail().trim().toLowerCase(Locale.ROOT));
-        }
-        if (hasPhone && user.getPhone() != null) {
-            user.setPhone(user.getPhone().trim());
         }
         return userRepository.save(user);
     }
@@ -52,7 +54,11 @@ public class UserService {
     }
 
     public Optional<User> findByPhoneAndPassword(String phone, String password) {
-        return userRepository.findByPhone(phone)
+        if (phone == null || phone.isBlank()) {
+            return Optional.empty();
+        }
+        String lookup = phoneNumberService.tryNormalizeToE164(phone).orElse(phone.trim());
+        return userRepository.findByPhone(lookup)
                 .filter(user -> user.getPassword().equals(password));
     }
 }

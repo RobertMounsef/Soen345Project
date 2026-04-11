@@ -14,6 +14,7 @@ import com.example.ticketreservationapp.api.ApiService;
 import com.example.ticketreservationapp.api.RetrofitClient;
 import com.example.ticketreservationapp.model.LoginRequest;
 import com.example.ticketreservationapp.model.LoginResponse;
+import com.example.ticketreservationapp.utils.PhoneFormatUtils;
 import com.example.ticketreservationapp.utils.SessionManager;
 
 import java.util.Locale;
@@ -53,6 +54,8 @@ public class LoginActivity extends BaseActivity {
 
         if (identifier.contains("@")) {
             identifier = identifier.toLowerCase(Locale.ROOT);
+        } else {
+            identifier = PhoneFormatUtils.normalizeForApi(identifier);
         }
 
         if (identifier.isEmpty() || password.isEmpty()) {

@@ -24,7 +24,8 @@ public class UserController {
             return ResponseEntity.ok(userService.createUser(user));
         } catch (IllegalArgumentException e) {
             String msg = e.getMessage();
-            if (msg != null && (msg.contains("required") || msg.contains("Required"))) {
+            if (msg != null && (msg.contains("required") || msg.contains("Required")
+                    || msg.contains("Invalid phone"))) {
                 return ResponseEntity.badRequest().body(Map.of("error", msg));
             }
             return ResponseEntity.status(409).body(Map.of("error", msg));

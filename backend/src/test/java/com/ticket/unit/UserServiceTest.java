@@ -2,6 +2,7 @@ package com.ticket.unit;
 
 import com.ticket.model.User;
 import com.ticket.repository.UserRepository;
+import com.ticket.service.PhoneNumberService;
 import com.ticket.service.UserService;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -9,7 +10,6 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -25,18 +25,19 @@ class UserServiceTest {
     @Mock
     private UserRepository userRepository;
 
-    @InjectMocks
+    private final PhoneNumberService phoneNumberService = new PhoneNumberService("CA");
     private UserService userService;
 
     private User alice;
 
     @BeforeEach
     void setUp() {
+        userService = new UserService(userRepository, phoneNumberService);
         alice = new User();
         alice.setUserId("-user001");
         alice.setName("Alice");
         alice.setEmail("alice@test.com");
-        alice.setPhone("5140001111");
+        alice.setPhone("+15145550199");
         alice.setPassword("pass123");
         alice.setRole(User.Role.CUSTOMER);
     }
@@ -66,12 +67,12 @@ class UserServiceTest {
             phoneUser.setPassword("secret");
             phoneUser.setRole(User.Role.CUSTOMER);
             when(userRepository.findByName("Bob")).thenReturn(Optional.empty());
-            when(userRepository.findByPhone("5145550199")).thenReturn(Optional.empty());
+            when(userRepository.findByPhone("+15145550199")).thenReturn(Optional.empty());
             when(userRepository.save(phoneUser)).thenReturn(phoneUser);
 
             User result = userService.createUser(phoneUser);
 
-            assertThat(result.getPhone()).isEqualTo("5145550199");
+            assertThat(result.getPhone()).isEqualTo("+15145550199");
             verify(userRepository).save(phoneUser);
         }
 
@@ -86,6 +87,22 @@ class UserServiceTest {
             assertThatThrownBy(() -> userService.createUser(bad))
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContaining("Email or phone");
+        }
+
+        @Test
+        @DisplayName("throws when phone is invalid")
+        void rejectsInvalidPhone() {
+            User u = new User();
+            u.setName("Bad");
+            u.setEmail("");
+            u.setPhone("123");
+            u.setPassword("p");
+            u.setRole(User.Role.CUSTOMER);
+            when(userRepository.findByName("Bad")).thenReturn(Optional.empty());
+
+            assertThatThrownBy(() -> userService.createUser(u))
+                    .isInstanceOf(IllegalArgumentException.class)
+                    .hasMessageContaining("Invalid phone");
         }
 
         @Test
@@ -151,17 +168,25 @@ class UserServiceTest {
         @Test
         @DisplayName("returns user when phone and password match")
         void correctCredentials() {
-            when(userRepository.findByPhone("5140001111")).thenReturn(Optional.of(alice));
+            when(userRepository.findByPhone("+15145550199")).thenReturn(Optional.of(alice));
 
-            assertThat(userService.findByPhoneAndPassword("5140001111", "pass123")).contains(alice);
+            assertThat(userService.findByPhoneAndPassword("+15145550199", "pass123")).contains(alice);
+        }
+
+        @Test
+        @DisplayName("normalizes national format before lookup")
+        void normalizesBeforeLookup() {
+            when(userRepository.findByPhone("+15145550199")).thenReturn(Optional.of(alice));
+
+            assertThat(userService.findByPhoneAndPassword("5145550199", "pass123")).contains(alice);
         }
 
         @Test
         @DisplayName("returns empty when password is wrong")
         void wrongPassword() {
-            when(userRepository.findByPhone("5140001111")).thenReturn(Optional.of(alice));
+            when(userRepository.findByPhone("+15145550199")).thenReturn(Optional.of(alice));
 
-            assertThat(userService.findByPhoneAndPassword("5140001111", "WRONG")).isEmpty();
+            assertThat(userService.findByPhoneAndPassword("+15145550199", "WRONG")).isEmpty();
         }
 
         @Test

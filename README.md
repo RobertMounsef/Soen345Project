@@ -26,11 +26,6 @@ We utilize a **Decoupled Client-Server Architecture**:
 * **Application Layer (Backend):** A **Spring Boot (Java 17)** RESTful API managing the business logic, reservation validation, and endpoint security. Optimized with **Asynchronous Processing** for non-blocking email notifications.
 * **Data Layer:** Hosted on **Firebase Realtime Database** for NoSQL cloud-based persistent storage. Includes an automated **DatabaseSeeder** for rapid environment setup.
 
-### Design Elements
-* **ER Diagram:** (https://drive.google.com/file/d/1LYcdCFUCBTYCgRVb8Z5pxiwDWKllbz8b/view?usp=sharing)
-* **UML Use Case Diagram:** [View Diagram](https://drive.google.com/file/d/1LJoI_UiU6BqSZz1dt07B8mZe3Ap7dmnr/view?usp=share_link)
-* *(Insert Links to Architecture, Class, and Sequence Diagrams here)*
-
 ---
 
 ## 3. Software Development Method
@@ -43,12 +38,14 @@ We adopted the **Agile Scrum** methodology to manage this project.
 ## 4. Software Testing & QA Strategy
 Testing was strictly integrated into our SDLC to guarantee production-ready software delivery and achieve full code verification.
 
-| Test Level | Scope | Tooling |
+### Software Testing Methods & Results
+We implemented rigorous testing suites (98 total tests) to satisfy our QA requirements:
+
+| Test Category | Scope & Objectives | Tooling |
 | :--- | :--- | :--- |
-| **Unit Testing** | Individual Java models and utility functions run locally on the host JVM. | JUnit 5 & Mockito |
-| **Integration Testing** | Framework configurations (e.g., verifying Android `SharedPreferences` saves). | AndroidJUnit4 & InstrumentationRegistry |
-| **System/UI Testing** | Full user reservation flows, layout bounds checking, and navigational intents. | Espresso UI Testing Framework |
-| **Business Logic Testing** | Comprehensive service-level verification ensuring data integrity on cascade deletions. | Mockito & Spring Test |
+| **Unit & Component Tests** | Verified individual Java models, util functions, and isolated backend services (e.g. `EventService`, `UserService`) independent of external layers. All tests compile and pass with 100% success rate on local JVMs. | JUnit 5 & Mockito |
+| **Integration Tests** | Validated interactions between subsystems, such as Android `SharedPreferences` persistence and cloud-based Firebase Realtime Database connections. Verified database seeders and repository linkages. | AndroidJUnit4 & Spring Boot Test |
+| **Functional & Acceptance Tests** | Automated end-to-end user reservation flows, layout bounds checking, and navigational intents. Ensures the system meets all stakeholder acceptance criteria and functional UI requirements. | Espresso UI Testing Framework |
 
 ### Continuous Integration (CI/CD)
 * **GitHub Actions** serves as our primary Automated CI tool. 

@@ -154,7 +154,12 @@ public class AddEditEventActivity extends BaseActivity {
                             Toast.LENGTH_SHORT).show();
                     finish();
                 } else {
-                    tvAddEventMessage.setText(editing ? "Failed to update event." : "Failed to create event.");
+                    try {
+                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                        tvAddEventMessage.setText("Error: " + errorBody);
+                    } catch (Exception e) {
+                        tvAddEventMessage.setText(editing ? "Failed to update event." : "Failed to create event.");
+                    }
                 }
             }
 
